@@ -1,0 +1,4515 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "App API",
+		"version": "1.0.0",
+		"description": "Built-in labels and descriptions follow the `Accept-Language` request header (`en-US` or `zh-CN`, English by default). Fixed codes in responses (statuses, categories, actions, roles, module keys…) are enums: map them to text in the frontend"
+	},
+	"components": {
+		"schemas": {
+			"User": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"image": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"emailVerified": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"email",
+					"emailVerified"
+				]
+			},
+			"Error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"details": {}
+				},
+				"required": [
+					"code",
+					"message"
+				]
+			},
+			"MyNotifications": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"key": {
+							"type": "string"
+						},
+						"category": {
+							"type": "string",
+							"enum": [
+								"billing",
+								"alert"
+							]
+						},
+						"description": {
+							"type": "string"
+						},
+						"enabled": {
+							"type": "boolean"
+						}
+					},
+					"required": [
+						"key",
+						"category",
+						"description",
+						"enabled"
+					]
+				}
+			},
+			"Site": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"defaultLocale": {
+						"type": "string",
+						"enum": [
+							"en-US",
+							"zh-CN"
+						]
+					},
+					"images": {
+						"type": "object",
+						"properties": {
+							"logo": {
+								"type": "boolean"
+							},
+							"share": {
+								"type": "boolean"
+							}
+						},
+						"required": [
+							"logo",
+							"share"
+						]
+					},
+					"currency": {
+						"type": "object",
+						"properties": {
+							"code": {
+								"type": "string"
+							},
+							"symbol": {
+								"type": "string"
+							},
+							"digits": {
+								"type": "integer"
+							}
+						},
+						"required": [
+							"code",
+							"symbol",
+							"digits"
+						]
+					}
+				},
+				"required": [
+					"name",
+					"description",
+					"defaultLocale",
+					"images",
+					"currency"
+				]
+			},
+			"Health": {
+				"type": "object",
+				"properties": {
+					"status": {
+						"type": "string",
+						"enum": [
+							"ok",
+							"degraded"
+						]
+					},
+					"checks": {
+						"type": "object",
+						"properties": {
+							"d1": {
+								"type": "boolean"
+							},
+							"migrations": {
+								"type": "boolean"
+							},
+							"kv": {
+								"type": "boolean"
+							},
+							"queue": {
+								"type": "boolean"
+							},
+							"r2": {
+								"type": "boolean"
+							}
+						},
+						"required": [
+							"d1",
+							"migrations",
+							"kv",
+							"queue",
+							"r2"
+						]
+					}
+				},
+				"required": [
+					"status",
+					"checks"
+				]
+			},
+			"AuthProvider": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"category": {
+						"type": "string",
+						"enum": [
+							"account",
+							"code",
+							"security",
+							"social"
+						]
+					},
+					"providerId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"type",
+					"name",
+					"category"
+				]
+			},
+			"ProxyMyNodes": {
+				"type": "object",
+				"properties": {
+					"usable": {
+						"type": "boolean"
+					},
+					"nodes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProxyMyNode"
+						}
+					}
+				},
+				"required": [
+					"usable",
+					"nodes"
+				]
+			},
+			"ProxyMyNode": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"protocol": {
+						"type": "string"
+					},
+					"ratio": {
+						"type": "number"
+					},
+					"tags": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"source": {
+						"type": "string",
+						"enum": [
+							"direct",
+							"relay"
+						]
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"online",
+							"offline",
+							"pending",
+							"active",
+							"maintenance",
+							"over_quota"
+						]
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"protocol",
+					"ratio",
+					"tags",
+					"source",
+					"status"
+				]
+			},
+			"BillingPublicPlan": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"kind": {
+						"type": "string",
+						"enum": [
+							"subscription",
+							"traffic_pack"
+						]
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"prices": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BillingPlanPrice"
+						},
+						"minItems": 1,
+						"maxItems": 5
+					},
+					"trafficBytes": {
+						"type": [
+							"integer",
+							"null"
+						],
+						"minimum": 1,
+						"maximum": 1000000000000000
+					},
+					"speedLimit": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 100000
+					},
+					"deviceLimit": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 10000
+					},
+					"resetMode": {
+						"type": "string",
+						"enum": [
+							"purchase_day",
+							"month_start",
+							"none"
+						]
+					},
+					"tags": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 32
+						},
+						"maxItems": 32
+					},
+					"soldOut": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"id",
+					"kind",
+					"name",
+					"description",
+					"prices",
+					"trafficBytes",
+					"speedLimit",
+					"deviceLimit",
+					"resetMode",
+					"tags",
+					"soldOut"
+				]
+			},
+			"BillingPlanPrice": {
+				"type": "object",
+				"properties": {
+					"period": {
+						"type": "string",
+						"enum": [
+							"month",
+							"quarter",
+							"half_year",
+							"year",
+							"one_time"
+						]
+					},
+					"amount": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 1000000000
+					}
+				},
+				"required": [
+					"period",
+					"amount"
+				]
+			},
+			"BillingSubscription": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "integer"
+					},
+					"userId": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"user": {
+						"$ref": "#/components/schemas/UserRef"
+					},
+					"planId": {
+						"type": "string"
+					},
+					"planName": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"active",
+							"disabled",
+							"expired"
+						]
+					},
+					"usable": {
+						"type": "boolean"
+					},
+					"trial": {
+						"type": "boolean"
+					},
+					"startAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"expireAt": {
+						"type": [
+							"string",
+							"null"
+						],
+						"format": "date-time"
+					},
+					"periodStart": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"trafficLimit": {
+						"type": [
+							"number",
+							"null"
+						]
+					},
+					"extraBytes": {
+						"type": "number"
+					},
+					"upload": {
+						"type": "number"
+					},
+					"download": {
+						"type": "number"
+					},
+					"total": {
+						"type": [
+							"number",
+							"null"
+						]
+					},
+					"speedLimit": {
+						"type": "integer"
+					},
+					"deviceLimit": {
+						"type": "integer"
+					},
+					"resetMode": {
+						"type": "string",
+						"enum": [
+							"purchase_day",
+							"month_start",
+							"none"
+						]
+					},
+					"autoRenew": {
+						"type": "boolean"
+					},
+					"onlineDevices": {
+						"type": "integer"
+					},
+					"url": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"userId",
+					"user",
+					"planId",
+					"planName",
+					"status",
+					"usable",
+					"trial",
+					"startAt",
+					"expireAt",
+					"periodStart",
+					"trafficLimit",
+					"extraBytes",
+					"upload",
+					"download",
+					"total",
+					"speedLimit",
+					"deviceLimit",
+					"resetMode",
+					"autoRenew",
+					"onlineDevices",
+					"url",
+					"createdAt",
+					"updatedAt"
+				]
+			},
+			"UserRef": {
+				"type": [
+					"object",
+					"null"
+				],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"email"
+				]
+			},
+			"BillingSubscriptionAccesses": {
+				"type": "object",
+				"properties": {
+					"accesses": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"at": {
+									"type": "string",
+									"format": "date-time"
+								},
+								"ip": {
+									"type": [
+										"string",
+										"null"
+									]
+								},
+								"country": {
+									"type": [
+										"string",
+										"null"
+									]
+								},
+								"userAgent": {
+									"type": "string"
+								},
+								"via": {
+									"type": "string",
+									"enum": [
+										"link",
+										"app"
+									]
+								}
+							},
+							"required": [
+								"at",
+								"ip",
+								"country",
+								"userAgent",
+								"via"
+							]
+						}
+					}
+				},
+				"required": [
+					"accesses"
+				]
+			},
+			"BillingSubscriptionToken": {
+				"type": "object",
+				"properties": {
+					"subscription": {
+						"$ref": "#/components/schemas/BillingSubscription"
+					},
+					"token": {
+						"type": "string"
+					},
+					"url": {
+						"type": [
+							"string",
+							"null"
+						]
+					}
+				},
+				"required": [
+					"subscription",
+					"token",
+					"url"
+				]
+			},
+			"BillingSubscriptionDevices": {
+				"type": "object",
+				"properties": {
+					"deviceLimit": {
+						"type": "integer"
+					},
+					"devices": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"ip": {
+									"type": "string"
+								},
+								"server": {
+									"type": "string"
+								},
+								"lastSeenAt": {
+									"type": "string",
+									"format": "date-time"
+								}
+							},
+							"required": [
+								"ip",
+								"server",
+								"lastSeenAt"
+							]
+						}
+					}
+				},
+				"required": [
+					"deviceLimit",
+					"devices"
+				]
+			},
+			"BillingSubscriptionTraffic": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"day": {
+							"type": "string"
+						},
+						"upload": {
+							"type": "number"
+						},
+						"download": {
+							"type": "number"
+						}
+					},
+					"required": [
+						"day",
+						"upload",
+						"download"
+					]
+				}
+			},
+			"BillingWallet": {
+				"type": "object",
+				"properties": {
+					"userId": {
+						"type": "string"
+					},
+					"currency": {
+						"type": "string"
+					},
+					"balance": {
+						"type": "integer"
+					},
+					"points": {
+						"type": "integer"
+					},
+					"commission": {
+						"type": "integer"
+					},
+					"totalSpent": {
+						"type": "integer"
+					},
+					"paidDays": {
+						"type": "integer"
+					},
+					"level": {
+						"$ref": "#/components/schemas/BillingLevel"
+					},
+					"levelOverride": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"nextLevel": {
+						"$ref": "#/components/schemas/BillingLevel"
+					}
+				},
+				"required": [
+					"userId",
+					"currency",
+					"balance",
+					"points",
+					"commission",
+					"totalSpent",
+					"paidDays",
+					"level",
+					"levelOverride",
+					"nextLevel"
+				]
+			},
+			"BillingLevel": {
+				"type": [
+					"object",
+					"null"
+				],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"minSpent": {
+						"type": [
+							"integer",
+							"null"
+						]
+					},
+					"minDays": {
+						"type": [
+							"integer",
+							"null"
+						]
+					},
+					"discountPercent": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"minSpent",
+					"minDays",
+					"discountPercent"
+				]
+			},
+			"BillingWalletEntry": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "integer"
+					},
+					"asset": {
+						"type": "string",
+						"enum": [
+							"balance",
+							"points",
+							"commission"
+						]
+					},
+					"amount": {
+						"type": "integer"
+					},
+					"after": {
+						"type": "integer"
+					},
+					"kind": {
+						"type": "string",
+						"enum": [
+							"topup",
+							"order",
+							"refund",
+							"adjust",
+							"reward",
+							"reclaim",
+							"commission",
+							"transfer",
+							"withdraw"
+						]
+					},
+					"refId": {
+						"type": "string"
+					},
+					"note": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"asset",
+					"amount",
+					"after",
+					"kind",
+					"refId",
+					"note",
+					"createdAt"
+				]
+			},
+			"BillingOrderQuote": {
+				"type": "object",
+				"properties": {
+					"currency": {
+						"type": "string"
+					},
+					"kind": {
+						"type": "string",
+						"enum": [
+							"new",
+							"renew",
+							"change",
+							"traffic_pack",
+							"topup",
+							"withdrawal"
+						]
+					},
+					"planId": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"period": {
+						"type": [
+							"string",
+							"null"
+						],
+						"enum": [
+							"month",
+							"quarter",
+							"half_year",
+							"year",
+							"one_time",
+							null
+						]
+					},
+					"subscriptionId": {
+						"type": [
+							"integer",
+							"null"
+						]
+					},
+					"price": {
+						"type": "integer"
+					},
+					"discount": {
+						"type": "integer"
+					},
+					"credit": {
+						"type": "integer"
+					},
+					"pointsUsed": {
+						"type": "integer"
+					},
+					"pointsAmount": {
+						"type": "integer"
+					},
+					"balanceUsed": {
+						"type": "integer"
+					},
+					"amount": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"currency",
+					"kind",
+					"planId",
+					"period",
+					"subscriptionId",
+					"price",
+					"discount",
+					"credit",
+					"pointsUsed",
+					"pointsAmount",
+					"balanceUsed",
+					"amount"
+				]
+			},
+			"BillingOrderInput": {
+				"type": "object",
+				"properties": {
+					"kind": {
+						"type": "string",
+						"enum": [
+							"new",
+							"renew",
+							"change",
+							"traffic_pack",
+							"topup"
+						]
+					},
+					"planId": {
+						"type": "string"
+					},
+					"period": {
+						"type": "string",
+						"enum": [
+							"month",
+							"quarter",
+							"half_year",
+							"year",
+							"one_time"
+						]
+					},
+					"subscriptionId": {
+						"type": "integer",
+						"exclusiveMinimum": 0
+					},
+					"amount": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 1000000000
+					},
+					"points": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"useBalance": {
+						"type": "boolean",
+						"default": true
+					}
+				},
+				"required": [
+					"kind"
+				]
+			},
+			"BillingOrderPlaced": {
+				"type": "object",
+				"properties": {
+					"order": {
+						"$ref": "#/components/schemas/BillingOrder"
+					},
+					"subscription": {
+						"type": [
+							"object",
+							"null"
+						],
+						"properties": {
+							"id": {
+								"type": "integer"
+							},
+							"token": {
+								"type": "string"
+							},
+							"url": {
+								"type": [
+									"string",
+									"null"
+								]
+							}
+						},
+						"required": [
+							"id",
+							"token",
+							"url"
+						]
+					}
+				},
+				"required": [
+					"order",
+					"subscription"
+				]
+			},
+			"BillingOrder": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/BillingOrderQuote"
+					},
+					{
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"status": {
+								"type": "string",
+								"enum": [
+									"pending",
+									"completed",
+									"cancelled",
+									"refunded"
+								]
+							},
+							"planName": {
+								"type": [
+									"string",
+									"null"
+								]
+							},
+							"paidAmount": {
+								"type": "integer"
+							},
+							"pointsEarned": {
+								"type": "integer"
+							},
+							"paidDays": {
+								"type": "integer"
+							},
+							"channelId": {
+								"type": [
+									"string",
+									"null"
+								]
+							},
+							"expiresAt": {
+								"type": "string",
+								"format": "date-time"
+							},
+							"paidAt": {
+								"type": [
+									"string",
+									"null"
+								],
+								"format": "date-time"
+							},
+							"createdAt": {
+								"type": "string",
+								"format": "date-time"
+							},
+							"updatedAt": {
+								"type": "string",
+								"format": "date-time"
+							}
+						},
+						"required": [
+							"id",
+							"status",
+							"planName",
+							"paidAmount",
+							"pointsEarned",
+							"paidDays",
+							"channelId",
+							"expiresAt",
+							"paidAt",
+							"createdAt",
+							"updatedAt"
+						]
+					}
+				]
+			},
+			"BillingPaymentChannel": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"logoVersion": {
+						"type": [
+							"integer",
+							"null"
+						]
+					},
+					"currency": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"type",
+					"name",
+					"logoVersion",
+					"currency"
+				]
+			},
+			"BillingExchangePublic": {
+				"type": "object",
+				"properties": {
+					"base": {
+						"type": "string"
+					},
+					"rates": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "object",
+							"properties": {
+								"rate": {
+									"type": "number"
+								},
+								"source": {
+									"type": "string",
+									"enum": [
+										"frankfurter",
+										"open_er_api",
+										"manual"
+									]
+								}
+							},
+							"required": [
+								"rate",
+								"source"
+							]
+						}
+					},
+					"credits": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"source": {
+									"type": "string",
+									"enum": [
+										"frankfurter",
+										"open_er_api"
+									]
+								},
+								"text": {
+									"type": "string"
+								},
+								"url": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"source",
+								"text",
+								"url"
+							]
+						}
+					}
+				},
+				"required": [
+					"base",
+					"rates",
+					"credits"
+				]
+			},
+			"BillingReferral": {
+				"type": "object",
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"currency": {
+						"type": "string"
+					},
+					"code": {
+						"type": "string"
+					},
+					"invited": {
+						"type": "boolean"
+					},
+					"invitees": {
+						"type": "integer"
+					},
+					"commission": {
+						"type": "integer"
+					},
+					"onHold": {
+						"type": "integer"
+					},
+					"withdrawable": {
+						"type": "integer"
+					},
+					"totalEarned": {
+						"type": "integer"
+					},
+					"percent": {
+						"type": "number"
+					},
+					"scope": {
+						"type": "string",
+						"enum": [
+							"all",
+							"first"
+						]
+					},
+					"holdDays": {
+						"type": "integer"
+					},
+					"withdraw": {
+						"type": "object",
+						"properties": {
+							"minAmount": {
+								"type": "integer"
+							},
+							"methods": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string"
+										},
+										"name": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"id",
+										"name"
+									]
+								}
+							}
+						},
+						"required": [
+							"minAmount",
+							"methods"
+						]
+					}
+				},
+				"required": [
+					"enabled",
+					"currency",
+					"code",
+					"invited",
+					"invitees",
+					"commission",
+					"onHold",
+					"withdrawable",
+					"totalEarned",
+					"percent",
+					"scope",
+					"holdDays",
+					"withdraw"
+				]
+			},
+			"BillingInvitee": {
+				"type": "object",
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"invitedAt": {
+						"type": [
+							"string",
+							"null"
+						],
+						"format": "date-time"
+					},
+					"signedUpAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"commission": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"email",
+					"invitedAt",
+					"signedUpAt",
+					"commission"
+				]
+			},
+			"BillingWithdrawal": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"currency": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "integer"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"pending",
+							"completed",
+							"cancelled",
+							"refunded"
+						]
+					},
+					"method": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"id",
+							"name"
+						]
+					},
+					"account": {
+						"type": "string"
+					},
+					"note": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"processedAt": {
+						"type": [
+							"string",
+							"null"
+						],
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"currency",
+					"amount",
+					"status",
+					"method",
+					"account",
+					"note",
+					"createdAt",
+					"processedAt"
+				]
+			}
+		},
+		"parameters": {}
+	},
+	"paths": {
+		"/api/v1/app/me": {
+			"get": {
+				"tags": [
+					"me"
+				],
+				"summary": "Current user",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": [
+					"me"
+				],
+				"summary": "Delete my account (sign in again first; nothing paid may be left)",
+				"description": "Needs a session from the last 10 minutes (403 REAUTH_REQUIRED). Refused for staff accounts (STAFF_ACCOUNT) and while balance, commission or paid subscriptions are left (409 ACCOUNT_HAS_BILLING, details say what). Sign the user out afterwards",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											]
+										}
+									},
+									"required": [
+										"ok"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/me/avatar": {
+			"put": {
+				"tags": [
+					"me"
+				],
+				"summary": "Upload my avatar (raw PNG, JPEG or WebP body, up to 2 MB)",
+				"description": "Send the image as the request body with its Content-Type. Served at `/api/v1/app/avatars/{userId}`, and `image` points there",
+				"requestBody": {
+					"required": true,
+					"description": "The image as the raw request body: PNG, JPEG or WebP up to 2 MB (no SVG)",
+					"content": {
+						"image/png": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/jpeg": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/webp": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"413": {
+						"description": "Larger than 2 MB",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": [
+					"me"
+				],
+				"summary": "Remove my avatar",
+				"description": "`image` goes back to what the upload replaced (such as a social provider's image), or null",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/me/notifications": {
+			"get": {
+				"tags": [
+					"me"
+				],
+				"summary": "Notifications I can turn off, and whether each is on",
+				"description": "Billing mails, plus server alerts for staff. Sign-in codes, links and security notices are always sent",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MyNotifications"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": [
+					"me"
+				],
+				"summary": "Turn notifications on or off (only the keys sent change)",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"additionalProperties": {
+									"type": "boolean"
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MyNotifications"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/site": {
+			"get": {
+				"tags": [
+					"site"
+				],
+				"summary": "Site name, description, images and currency (public)",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Site"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/health": {
+			"get": {
+				"tags": [
+					"health"
+				],
+				"summary": "Service health for uptime monitors (public)",
+				"description": "D1 reachable and migrated, KV, queues and R2 bound. 503 when any check fails, and before the site is installed",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Health"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Health"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/auth-settings/providers": {
+			"get": {
+				"tags": [
+					"auth-settings"
+				],
+				"summary": "Enabled sign-in providers in display order (public, for rendering the sign-in page)",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/AuthProvider"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/logos/site/{image}": {
+			"get": {
+				"tags": [
+					"logos"
+				],
+				"summary": "The site's logo or link-preview image",
+				"description": "Whether each is uploaded is in GET /api/v1/app/site",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"logo",
+								"share"
+							]
+						},
+						"required": true,
+						"name": "image",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Image",
+						"content": {
+							"image/svg+xml": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/png": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/jpeg": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/webp": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Not modified"
+					},
+					"404": {
+						"description": "Not uploaded",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/logos/payment/{channelId}": {
+			"get": {
+				"tags": [
+					"logos"
+				],
+				"summary": "Uploaded logo of a payment channel",
+				"description": "The key is the channel id; the payment channel list gives `logoVersion` (add it as `?v=`) when one is uploaded",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "channelId",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "SVG, PNG, WebP or ICO image",
+						"content": {
+							"image/svg+xml": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/png": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/x-icon": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Not modified"
+					},
+					"404": {
+						"description": "No logo uploaded",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/logos/oidc/{providerId}": {
+			"get": {
+				"tags": [
+					"logos"
+				],
+				"summary": "Uploaded logo of an OIDC sign-in provider",
+				"description": "The key is the provider's `providerId` (as in the sign-in provider list)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "providerId",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "SVG, PNG, WebP or ICO image",
+						"content": {
+							"image/svg+xml": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/png": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/x-icon": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Not modified"
+					},
+					"404": {
+						"description": "No logo uploaded",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/logos/{type}": {
+			"get": {
+				"tags": [
+					"logos"
+				],
+				"summary": "Brand logo of a provider type (sign-in, email, SMS, payment)",
+				"description": "The key is the provider `type` (github, resend, aliyun, stripe…). Generic types such as email_password, oidc or epay have none (404)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "type",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"light",
+								"dark"
+							],
+							"default": "light",
+							"description": "Variant for dark backgrounds; the light one when there is none"
+						},
+						"required": false,
+						"description": "Variant for dark backgrounds; the light one when there is none",
+						"name": "theme",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "SVG, PNG, WebP or ICO image",
+						"content": {
+							"image/svg+xml": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/png": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/x-icon": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Not modified"
+					},
+					"404": {
+						"description": "No logo for this type",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"502": {
+						"description": "Not stored yet and the source is unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/files/{id}": {
+			"get": {
+				"tags": [
+					"files"
+				],
+				"summary": "Download a file",
+				"description": "Public: anyone with the id can download it. Raster images, audio and video open in the browser; other types download under their original name",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "The file with the Content-Type it was uploaded with",
+						"content": {
+							"*/*": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Not modified"
+					},
+					"404": {
+						"description": "No such file",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/avatars/{userId}": {
+			"get": {
+				"tags": [
+					"avatars"
+				],
+				"summary": "A user's uploaded avatar",
+				"description": "Public. After an upload, `user.image` is this URL with `?v=` for cache busting. 404 when the user hasn't uploaded one (an image from a social provider stays in `user.image`)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "userId",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"description": "Version from `user.image`; a matching one is cached for good"
+						},
+						"required": false,
+						"description": "Version from `user.image`; a matching one is cached for good",
+						"name": "v",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "PNG, JPEG or WebP image",
+						"content": {
+							"image/png": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/jpeg": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/webp": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Not modified"
+					},
+					"404": {
+						"description": "No avatar uploaded",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/proxy/subscriptions/{token}": {
+			"get": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "A subscription's client config, picked by User-Agent or ?target (public)",
+				"description": "Disabled or unknown tokens get 404, and every link 403 SUBSCRIPTION_LINK_DISABLED while subscriptions are app-only. The Subscription-Userinfo header carries usage, the limit and the expiry",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "token",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 64
+						},
+						"required": false,
+						"name": "target",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 32
+						},
+						"required": false,
+						"name": "flag",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "include",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "exclude",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "rename",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"none",
+								"name",
+								"ratio"
+							]
+						},
+						"required": false,
+						"name": "sort",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"0",
+								"1"
+							]
+						},
+						"required": false,
+						"name": "emoji",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Rendered subscription (403 when links are off, 404 for unknown or disabled tokens, 429 when rate limited)",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/proxy/subscriptions/{id}/config": {
+			"get": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "One of my subscriptions' client config, for the app (the same output as its link)",
+				"description": "Sign in with a cookie or `Authorization: Bearer <set-auth-token>`. Takes the link's parameters (?target= picks a template). 403 SUBSCRIPTION_APP_DISABLED while subscriptions are link-only; 404 for disabled subscriptions and those of other users",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 64
+						},
+						"required": false,
+						"name": "target",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 32
+						},
+						"required": false,
+						"name": "flag",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "include",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "exclude",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "rename",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"none",
+								"name",
+								"ratio"
+							]
+						},
+						"required": false,
+						"name": "sort",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"0",
+								"1"
+							]
+						},
+						"required": false,
+						"name": "emoji",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Rendered subscription, with the same headers as its link",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/proxy/subscriptions/{id}/nodes": {
+			"get": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "Nodes one of my subscriptions gets, with their status (as in its subscription link)",
+				"description": "Addresses and parameters aren't included: clients get them from the subscription link",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyMyNodes"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/plans": {
+			"get": {
+				"tags": [
+					"billing-plans"
+				],
+				"summary": "Plans on sale, in display order (public; signed-in users also see plans for their level)",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"currency": {
+											"type": "string"
+										},
+										"plans": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/BillingPublicPlan"
+											}
+										}
+									},
+									"required": [
+										"currency",
+										"plans"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/subscriptions": {
+			"get": {
+				"tags": [
+					"billing-subscriptions"
+				],
+				"summary": "My subscriptions, with their links",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/BillingSubscription"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/subscriptions/{id}": {
+			"get": {
+				"tags": [
+					"billing-subscriptions"
+				],
+				"summary": "One of my subscriptions, with its link",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingSubscription"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"tags": [
+					"billing-subscriptions"
+				],
+				"summary": "Turn automatic renewal of one of my subscriptions on or off",
+				"description": "On: 1–2 days before it expires it is renewed from the balance, same plan and period as last time; without enough balance the user gets an email",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"autoRenew": {
+										"type": "boolean"
+									}
+								},
+								"required": [
+									"autoRenew"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingSubscription"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/subscriptions/{id}/accesses": {
+			"get": {
+				"tags": [
+					"billing-subscriptions"
+				],
+				"summary": "Recent fetches of my subscription's link (reset it if one isn't mine)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingSubscriptionAccesses"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/subscriptions/{id}/reset-token": {
+			"post": {
+				"tags": [
+					"billing-subscriptions"
+				],
+				"summary": "New link token and node credentials for one of my subscriptions",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingSubscriptionToken"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/subscriptions/{id}/devices": {
+			"get": {
+				"tags": [
+					"billing-subscriptions"
+				],
+				"summary": "Devices online on one of my subscriptions in the last 5 minutes",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingSubscriptionDevices"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/subscriptions/{id}/traffic": {
+			"get": {
+				"tags": [
+					"billing-subscriptions"
+				],
+				"summary": "Daily traffic of one of my subscriptions",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 366,
+							"default": 30
+						},
+						"required": false,
+						"name": "days",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingSubscriptionTraffic"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/wallet": {
+			"get": {
+				"tags": [
+					"billing-wallet"
+				],
+				"summary": "My balance, points and level",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingWallet"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/wallet/entries": {
+			"get": {
+				"tags": [
+					"billing-wallet"
+				],
+				"summary": "My balance and points ledger, newest first",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						},
+						"required": false,
+						"name": "page",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20
+						},
+						"required": false,
+						"name": "pageSize",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"balance",
+								"points",
+								"commission"
+							]
+						},
+						"required": false,
+						"name": "asset",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/BillingWalletEntry"
+											}
+										},
+										"total": {
+											"type": "integer"
+										}
+									},
+									"required": [
+										"items",
+										"total"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/orders/quote": {
+			"post": {
+				"tags": [
+					"billing-orders"
+				],
+				"summary": "Price an order without placing it",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BillingOrderInput"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingOrderQuote"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/orders": {
+			"post": {
+				"tags": [
+					"billing-orders"
+				],
+				"summary": "Place an order: balance and points are taken now; with nothing left to pay it completes right away",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BillingOrderInput"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The same order was already waiting for payment",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingOrderPlaced"
+								}
+							}
+						}
+					},
+					"201": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingOrderPlaced"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"tags": [
+					"billing-orders"
+				],
+				"summary": "My orders, newest first",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						},
+						"required": false,
+						"name": "page",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20
+						},
+						"required": false,
+						"name": "pageSize",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"pending",
+								"completed",
+								"cancelled",
+								"refunded"
+							]
+						},
+						"required": false,
+						"name": "status",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"new",
+								"renew",
+								"change",
+								"traffic_pack",
+								"topup",
+								"withdrawal"
+							]
+						},
+						"required": false,
+						"name": "kind",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/BillingOrder"
+											}
+										},
+										"total": {
+											"type": "integer"
+										}
+									},
+									"required": [
+										"items",
+										"total"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/orders/{id}": {
+			"get": {
+				"tags": [
+					"billing-orders"
+				],
+				"summary": "One of my orders",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingOrder"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/orders/{id}/cancel": {
+			"post": {
+				"tags": [
+					"billing-orders"
+				],
+				"summary": "Cancel one of my pending orders (balance and points go back)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingOrder"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/payments/channels": {
+			"get": {
+				"tags": [
+					"billing-payments"
+				],
+				"summary": "Payment channels users can pay with, in order (only those with an exchange rate)",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/BillingPaymentChannel"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/payments/checkout": {
+			"post": {
+				"tags": [
+					"billing-payments"
+				],
+				"summary": "Pay one of my pending orders through a channel: returns the page to send the user to",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"orderId": {
+										"type": "string"
+									},
+									"channelId": {
+										"type": "string"
+									},
+									"returnUrl": {
+										"type": "string",
+										"maxLength": 2000
+									}
+								},
+								"required": [
+									"orderId",
+									"channelId"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"url": {
+											"type": "string"
+										},
+										"charge": {
+											"type": "object",
+											"properties": {
+												"currency": {
+													"type": "string"
+												},
+												"amount": {
+													"type": "integer"
+												},
+												"rate": {
+													"type": "number"
+												}
+											},
+											"required": [
+												"currency",
+												"amount",
+												"rate"
+											]
+										}
+									},
+									"required": [
+										"url",
+										"charge"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/payments/callback/{channelId}": {
+			"post": {
+				"tags": [
+					"billing-payments"
+				],
+				"summary": "Payment provider notification (POST; signed by the provider)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "channelId",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Handled; the body is what the provider expects (e.g. success)"
+					},
+					"400": {
+						"description": "Refused (bad signature, another merchant or currency)"
+					},
+					"404": {
+						"description": "Unknown channel or order"
+					}
+				}
+			},
+			"get": {
+				"tags": [
+					"billing-payments"
+				],
+				"summary": "Payment provider notification (GET; signed by the provider)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "channelId",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Handled; the body is what the provider expects (e.g. success)"
+					},
+					"400": {
+						"description": "Refused (bad signature, another merchant or currency)"
+					},
+					"404": {
+						"description": "Unknown channel or order"
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/exchange": {
+			"get": {
+				"tags": [
+					"billing-exchange"
+				],
+				"summary": "Exchange rates for showing converted prices (checkout returns the amount actually charged)",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingExchangePublic"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/referral": {
+			"get": {
+				"tags": [
+					"billing-referral"
+				],
+				"summary": "My invite code, invitees, commission and what I can withdraw",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingReferral"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/referral/bind": {
+			"post": {
+				"tags": [
+					"billing-referral"
+				],
+				"summary": "Bind my inviter by their invite code (soon after signing up, before paying for anything)",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"code": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 32
+									}
+								},
+								"required": [
+									"code"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											]
+										}
+									},
+									"required": [
+										"ok"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/referral/invitees": {
+			"get": {
+				"tags": [
+					"billing-referral"
+				],
+				"summary": "People I invited, newest first",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						},
+						"required": false,
+						"name": "page",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20
+						},
+						"required": false,
+						"name": "pageSize",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/BillingInvitee"
+											}
+										},
+										"total": {
+											"type": "integer"
+										}
+									},
+									"required": [
+										"items",
+										"total"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/referral/transfer": {
+			"post": {
+				"tags": [
+					"billing-referral"
+				],
+				"summary": "Move commission to my balance (any time, including commission still on hold)",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"amount": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 1000000000
+									}
+								},
+								"required": [
+									"amount"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											]
+										}
+									},
+									"required": [
+										"ok"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/referral/withdrawals": {
+			"get": {
+				"tags": [
+					"billing-referral"
+				],
+				"summary": "My withdrawals, newest first",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						},
+						"required": false,
+						"name": "page",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20
+						},
+						"required": false,
+						"name": "pageSize",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/BillingWithdrawal"
+											}
+										},
+										"total": {
+											"type": "integer"
+										}
+									},
+									"required": [
+										"items",
+										"total"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": [
+					"billing-referral"
+				],
+				"summary": "Ask to withdraw commission (one pending request at a time; an admin pays it out)",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"amount": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 1000000000
+									},
+									"method": {
+										"type": "string"
+									},
+									"account": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 200
+									}
+								},
+								"required": [
+									"amount",
+									"method",
+									"account"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingWithdrawal"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/referral/withdrawals/{id}/cancel": {
+			"post": {
+				"tags": [
+					"billing-referral"
+				],
+				"summary": "Withdraw my pending request (the amount goes back to my commission)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BillingWithdrawal"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"webhooks": {}
+}

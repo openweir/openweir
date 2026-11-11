@@ -1,0 +1,712 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "Relay node API",
+		"version": "1.0.0",
+		"description": "Built-in labels and descriptions follow the `Accept-Language` request header (`en-US` or `zh-CN`, English by default). Fixed codes in responses (statuses, categories, actions, roles, module keys…) are enums: map them to text in the frontend"
+	},
+	"components": {
+		"securitySchemes": {
+			"node": {
+				"type": "http",
+				"scheme": "bearer",
+				"description": "Node secret; also send the server id in X-Server-Id"
+			}
+		},
+		"schemas": {
+			"NodeInstallConfig": {
+				"type": "object",
+				"properties": {
+					"api_host": {
+						"type": "string"
+					},
+					"server_id": {
+						"type": "integer"
+					},
+					"secret_key": {
+						"type": "string"
+					},
+					"download_url": {
+						"type": "string"
+					},
+					"checksums_url": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"api_host",
+					"server_id",
+					"secret_key",
+					"download_url",
+					"checksums_url"
+				]
+			},
+			"Error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"details": {}
+				},
+				"required": [
+					"code",
+					"message"
+				]
+			},
+			"NodeInstallClaim": {
+				"type": "object",
+				"properties": {
+					"token": {
+						"type": "string",
+						"minLength": 16,
+						"maxLength": 128
+					},
+					"arch": {
+						"type": "string",
+						"enum": [
+							"amd64",
+							"arm64"
+						]
+					}
+				},
+				"required": [
+					"token",
+					"arch"
+				]
+			},
+			"RelayConfig": {
+				"type": "object",
+				"properties": {
+					"revision": {
+						"type": "string"
+					},
+					"rotate_secret": {
+						"type": "string",
+						"description": "New node secret: save it to the config file and use it from now on"
+					},
+					"data": {
+						"type": "object",
+						"properties": {
+							"pull_interval": {
+								"type": "integer"
+							},
+							"push_interval": {
+								"type": "integer"
+							},
+							"rules": {
+								"type": "array",
+								"items": {
+									"$ref": "#/components/schemas/RelayRule"
+								}
+							},
+							"tunnel": {
+								"type": [
+									"object",
+									"null"
+								],
+								"properties": {
+									"listen_port": {
+										"type": "integer"
+									},
+									"transport": {
+										"type": "string",
+										"enum": [
+											"tls",
+											"ws"
+										]
+									}
+								},
+								"required": [
+									"listen_port",
+									"transport"
+								]
+							},
+							"exits": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"rule_id": {
+											"type": "string"
+										},
+										"entry_server_id": {
+											"type": "integer"
+										},
+										"token": {
+											"type": "string"
+										},
+										"targets": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"proxy_protocol": {
+											"anyOf": [
+												{
+													"type": "number",
+													"enum": [
+														0
+													]
+												},
+												{
+													"type": "number",
+													"enum": [
+														2
+													]
+												}
+											]
+										},
+										"entry_addresses": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										}
+									},
+									"required": [
+										"rule_id",
+										"entry_server_id",
+										"token",
+										"targets",
+										"proxy_protocol",
+										"entry_addresses"
+									]
+								}
+							},
+							"upgrade": {
+								"$ref": "#/components/schemas/NodeUpgrade"
+							}
+						},
+						"required": [
+							"pull_interval",
+							"push_interval",
+							"rules",
+							"tunnel",
+							"exits"
+						]
+					}
+				},
+				"required": [
+					"revision",
+					"data"
+				]
+			},
+			"RelayRule": {
+				"type": "object",
+				"properties": {
+					"rule_id": {
+						"type": "string"
+					},
+					"listen_port": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 65535
+					},
+					"network": {
+						"type": "string",
+						"enum": [
+							"tcp",
+							"udp",
+							"tcp,udp"
+						]
+					},
+					"targets": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"egress": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/RelayEgress"
+						},
+						"maxItems": 4
+					},
+					"proxy_protocol": {
+						"anyOf": [
+							{
+								"type": "number",
+								"enum": [
+									0
+								]
+							},
+							{
+								"type": "number",
+								"enum": [
+									2
+								]
+							}
+						]
+					},
+					"ratio": {
+						"type": "number"
+					}
+				},
+				"required": [
+					"rule_id",
+					"listen_port",
+					"network",
+					"targets",
+					"egress",
+					"proxy_protocol",
+					"ratio"
+				]
+			},
+			"RelayEgress": {
+				"type": "object",
+				"properties": {
+					"exit_server_id": {
+						"type": "integer"
+					},
+					"host": {
+						"type": "string"
+					},
+					"port": {
+						"type": "integer"
+					},
+					"transport": {
+						"type": "string",
+						"enum": [
+							"tls",
+							"ws"
+						]
+					},
+					"token": {
+						"type": "string"
+					},
+					"fingerprint": {
+						"type": [
+							"string",
+							"null"
+						]
+					}
+				},
+				"required": [
+					"exit_server_id",
+					"host",
+					"port",
+					"transport",
+					"token",
+					"fingerprint"
+				]
+			},
+			"NodeUpgrade": {
+				"type": "object",
+				"properties": {
+					"version": {
+						"type": "string"
+					},
+					"download_base": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"version",
+					"download_base"
+				]
+			},
+			"NodeReportAck": {
+				"type": "object",
+				"properties": {
+					"ack_seq": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"rotate_secret": {
+						"type": "string",
+						"description": "New node secret: save it to the config file and use it from now on"
+					}
+				},
+				"required": [
+					"ack_seq"
+				]
+			},
+			"RelayReport": {
+				"type": "object",
+				"properties": {
+					"applied_revision": {
+						"type": "string",
+						"maxLength": 128
+					},
+					"version": {
+						"type": "string",
+						"maxLength": 64
+					},
+					"load": {
+						"$ref": "#/components/schemas/NodeLoad"
+					},
+					"error": {
+						"type": "string",
+						"maxLength": 2000
+					},
+					"seq": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"tunnel_fingerprint": {
+						"type": "string",
+						"pattern": "^[0-9a-f]{64}$"
+					},
+					"rule_traffic": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"rule_id": {
+									"type": "string"
+								},
+								"upload": {
+									"type": "integer",
+									"minimum": 0
+								},
+								"download": {
+									"type": "integer",
+									"minimum": 0
+								}
+							},
+							"required": [
+								"rule_id",
+								"upload",
+								"download"
+							]
+						},
+						"maxItems": 10000,
+						"default": []
+					},
+					"egress_status": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"rule_id": {
+									"type": "string"
+								},
+								"exit_server_id": {
+									"type": [
+										"integer",
+										"null"
+									]
+								},
+								"host": {
+									"type": "string",
+									"maxLength": 253
+								},
+								"port": {
+									"type": "integer"
+								},
+								"ok": {
+									"type": "boolean"
+								},
+								"rtt_ms": {
+									"type": [
+										"integer",
+										"null"
+									],
+									"minimum": 0
+								},
+								"failures": {
+									"type": "integer",
+									"minimum": 0
+								},
+								"last_error": {
+									"type": "string",
+									"maxLength": 500,
+									"default": ""
+								},
+								"switched_at": {
+									"type": [
+										"integer",
+										"null"
+									]
+								}
+							},
+							"required": [
+								"rule_id",
+								"exit_server_id",
+								"host",
+								"port",
+								"ok",
+								"rtt_ms",
+								"failures",
+								"switched_at"
+							]
+						},
+						"maxItems": 10000,
+						"default": []
+					}
+				},
+				"required": [
+					"applied_revision",
+					"version",
+					"seq"
+				]
+			},
+			"NodeLoad": {
+				"type": "object",
+				"properties": {
+					"cpu": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 100
+					},
+					"mem": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 100
+					},
+					"disk": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 100
+					},
+					"mem_total": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"disk_total": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"uptime": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"net_rx_bytes": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"net_tx_bytes": {
+						"type": "integer",
+						"minimum": 0
+					}
+				},
+				"required": [
+					"cpu",
+					"mem",
+					"disk"
+				]
+			}
+		},
+		"parameters": {}
+	},
+	"paths": {
+		"/api/v1/node/relay/install.sh": {
+			"get": {
+				"tags": [
+					"node-relay"
+				],
+				"summary": "Install script for the relay program (run with --token or --uninstall)",
+				"responses": {
+					"200": {
+						"description": "POSIX shell script",
+						"content": {
+							"text/x-shellscript": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/node/relay/install/claim": {
+			"post": {
+				"tags": [
+					"node-relay"
+				],
+				"summary": "Exchange a one-time install token for the node config",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/NodeInstallClaim"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NodeInstallConfig"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token invalid, expired or for another program",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "No release of the program is known yet",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/node/relay/config": {
+			"get": {
+				"tags": [
+					"node-relay"
+				],
+				"summary": "Relay config (entry rules, exit tunnel and authorisations)",
+				"security": [
+					{
+						"node": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RelayConfig"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Config unchanged since If-None-Match"
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/node/relay/report": {
+			"post": {
+				"tags": [
+					"node-relay"
+				],
+				"summary": "Status and per-rule traffic report",
+				"security": [
+					{
+						"node": []
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RelayReport"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NodeReportAck"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"webhooks": {}
+}

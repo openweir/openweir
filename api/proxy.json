@@ -1,0 +1,938 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "Proxy node API",
+		"version": "1.0.0",
+		"description": "Built-in labels and descriptions follow the `Accept-Language` request header (`en-US` or `zh-CN`, English by default). Fixed codes in responses (statuses, categories, actions, roles, module keys…) are enums: map them to text in the frontend"
+	},
+	"components": {
+		"securitySchemes": {
+			"node": {
+				"type": "http",
+				"scheme": "bearer",
+				"description": "Node secret; also send the server id in X-Server-Id"
+			}
+		},
+		"schemas": {
+			"NodeInstallConfig": {
+				"type": "object",
+				"properties": {
+					"api_host": {
+						"type": "string"
+					},
+					"server_id": {
+						"type": "integer"
+					},
+					"secret_key": {
+						"type": "string"
+					},
+					"download_url": {
+						"type": "string"
+					},
+					"checksums_url": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"api_host",
+					"server_id",
+					"secret_key",
+					"download_url",
+					"checksums_url"
+				]
+			},
+			"Error": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"details": {}
+				},
+				"required": [
+					"code",
+					"message"
+				]
+			},
+			"NodeInstallClaim": {
+				"type": "object",
+				"properties": {
+					"token": {
+						"type": "string",
+						"minLength": 16,
+						"maxLength": 128
+					},
+					"arch": {
+						"type": "string",
+						"enum": [
+							"amd64",
+							"arm64"
+						]
+					}
+				},
+				"required": [
+					"token",
+					"arch"
+				]
+			},
+			"ProxyConfig": {
+				"type": "object",
+				"properties": {
+					"revision": {
+						"type": "string"
+					},
+					"rotate_secret": {
+						"type": "string",
+						"description": "New node secret: save it to the config file and use it from now on"
+					},
+					"data": {
+						"type": "object",
+						"properties": {
+							"pull_interval": {
+								"type": "integer"
+							},
+							"push_interval": {
+								"type": "integer"
+							},
+							"traffic_report_threshold": {
+								"type": "integer"
+							},
+							"online_report_threshold": {
+								"type": "integer"
+							},
+							"ip_strategy": {
+								"type": "string",
+								"enum": [
+									"prefer_ipv4",
+									"prefer_ipv6",
+									"only_ipv4",
+									"only_ipv6"
+								]
+							},
+							"dns": {
+								"type": "array",
+								"items": {
+									"$ref": "#/components/schemas/ProxyDnsServer"
+								}
+							},
+							"block": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"outbound": {
+								"type": "array",
+								"items": {
+									"$ref": "#/components/schemas/ProxyOutbound"
+								}
+							},
+							"protocols": {
+								"type": "array",
+								"items": {
+									"$ref": "#/components/schemas/ProxyInbound"
+								}
+							},
+							"allowed_sources": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								}
+							},
+							"upgrade": {
+								"$ref": "#/components/schemas/NodeUpgrade"
+							}
+						},
+						"required": [
+							"pull_interval",
+							"push_interval",
+							"traffic_report_threshold",
+							"online_report_threshold",
+							"ip_strategy",
+							"dns",
+							"block",
+							"outbound",
+							"protocols"
+						]
+					}
+				},
+				"required": [
+					"revision",
+					"data"
+				]
+			},
+			"ProxyDnsServer": {
+				"type": "object",
+				"properties": {
+					"proto": {
+						"type": "string",
+						"enum": [
+							"udp",
+							"tcp",
+							"tls",
+							"https"
+						]
+					},
+					"address": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 253
+					},
+					"server_name": {
+						"type": "string",
+						"maxLength": 253,
+						"default": ""
+					},
+					"domains": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 253,
+							"pattern": "^((full|suffix|domain|keyword|plain|regex|regexp|geosite|geoip|ip|cidr):)?[^\\s]+$"
+						},
+						"maxItems": 1000,
+						"default": []
+					}
+				},
+				"required": [
+					"proto",
+					"address"
+				]
+			},
+			"ProxyOutbound": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 64
+					},
+					"protocol": {
+						"type": "string",
+						"enum": [
+							"direct",
+							"block",
+							"http",
+							"socks",
+							"shadowsocks",
+							"hysteria2",
+							"trojan",
+							"vless",
+							"vmess",
+							"anytls",
+							"tuic"
+						]
+					},
+					"address": {
+						"type": "string",
+						"maxLength": 253,
+						"default": ""
+					},
+					"port": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 65535,
+						"default": 0
+					},
+					"rules": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 253,
+							"pattern": "^((full|suffix|domain|keyword|plain|regex|regexp|geosite|geoip|ip|cidr):)?[^\\s]+$"
+						},
+						"maxItems": 10000,
+						"default": []
+					}
+				},
+				"required": [
+					"name",
+					"protocol"
+				],
+				"additionalProperties": {}
+			},
+			"ProxyInbound": {
+				"type": "object",
+				"properties": {
+					"inbound_id": {
+						"type": "string",
+						"description": "Unique per server; keys users and reports"
+					},
+					"type": {
+						"type": "string",
+						"enum": [
+							"vless",
+							"vmess",
+							"trojan",
+							"shadowsocks",
+							"shadowsocksr",
+							"anytls",
+							"hysteria2",
+							"tuic",
+							"naive",
+							"http",
+							"https",
+							"socks5",
+							"snell",
+							"mieru",
+							"nowhere",
+							"mtproxy"
+						]
+					},
+					"port": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 65535
+					},
+					"listen_host": {
+						"type": "string"
+					},
+					"enable": {
+						"type": "boolean",
+						"enum": [
+							true
+						]
+					},
+					"ratio": {
+						"type": "number",
+						"description": "Traffic multiplier for accounting"
+					}
+				},
+				"required": [
+					"inbound_id",
+					"type",
+					"port",
+					"listen_host",
+					"enable",
+					"ratio"
+				],
+				"additionalProperties": {},
+				"description": "Remaining keys are the protocol fields of this type (security, sni, reality_*, transport, cipher…)"
+			},
+			"NodeUpgrade": {
+				"type": "object",
+				"properties": {
+					"version": {
+						"type": "string"
+					},
+					"download_base": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"version",
+					"download_base"
+				]
+			},
+			"ProxyAlive": {
+				"type": "object",
+				"properties": {
+					"salt": {
+						"type": "string",
+						"description": "Random for each answer. Hash a client IP (written as in online[]) as the first 16 hex digits of SHA-256(\"<salt>:<ip>\")"
+					},
+					"alive": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"description": "Subscription uid → hashes of the client IPs online on it across all servers (this one included), for subscriptions with a device limit; uids with none are left out"
+					},
+					"rotate_secret": {
+						"type": "string",
+						"description": "New node secret: save it to the config file and use it from now on"
+					}
+				},
+				"required": [
+					"salt",
+					"alive"
+				]
+			},
+			"ProxyUsers": {
+				"type": "object",
+				"properties": {
+					"users": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ProxyUser"
+						}
+					},
+					"rotate_secret": {
+						"type": "string",
+						"description": "New node secret: save it to the config file and use it from now on"
+					}
+				},
+				"required": [
+					"users"
+				]
+			},
+			"ProxyUser": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "integer"
+					},
+					"uuid": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					},
+					"speed_limit": {
+						"type": "integer",
+						"description": "Mbps; 0 is unlimited"
+					},
+					"device_limit": {
+						"type": "integer",
+						"description": "0 is unlimited"
+					}
+				},
+				"required": [
+					"id",
+					"uuid",
+					"password",
+					"speed_limit",
+					"device_limit"
+				]
+			},
+			"NodeReportAck": {
+				"type": "object",
+				"properties": {
+					"ack_seq": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"rotate_secret": {
+						"type": "string",
+						"description": "New node secret: save it to the config file and use it from now on"
+					}
+				},
+				"required": [
+					"ack_seq"
+				]
+			},
+			"ProxyReport": {
+				"type": "object",
+				"properties": {
+					"applied_revision": {
+						"type": "string",
+						"maxLength": 128
+					},
+					"version": {
+						"type": "string",
+						"maxLength": 64
+					},
+					"load": {
+						"$ref": "#/components/schemas/NodeLoad"
+					},
+					"error": {
+						"type": "string",
+						"maxLength": 2000
+					},
+					"seq": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"traffic": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"inbound_id": {
+									"type": "string"
+								},
+								"uid": {
+									"type": "integer"
+								},
+								"upload": {
+									"type": "integer",
+									"minimum": 0
+								},
+								"download": {
+									"type": "integer",
+									"minimum": 0
+								}
+							},
+							"required": [
+								"inbound_id",
+								"uid",
+								"upload",
+								"download"
+							]
+						},
+						"maxItems": 100000,
+						"default": []
+					},
+					"online": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"inbound_id": {
+									"type": "string"
+								},
+								"uid": {
+									"type": "integer"
+								},
+								"ip": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"inbound_id",
+								"uid",
+								"ip"
+							]
+						},
+						"maxItems": 100000,
+						"default": []
+					},
+					"rejected_sources": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"ip": {
+									"type": "string",
+									"maxLength": 64
+								},
+								"inbound_id": {
+									"type": "string"
+								},
+								"count": {
+									"type": "integer",
+									"minimum": 1
+								}
+							},
+							"required": [
+								"ip",
+								"inbound_id",
+								"count"
+							]
+						},
+						"maxItems": 1000,
+						"default": []
+					}
+				},
+				"required": [
+					"applied_revision",
+					"version",
+					"seq"
+				]
+			},
+			"NodeLoad": {
+				"type": "object",
+				"properties": {
+					"cpu": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 100
+					},
+					"mem": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 100
+					},
+					"disk": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 100
+					},
+					"mem_total": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"disk_total": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"uptime": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"net_rx_bytes": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"net_tx_bytes": {
+						"type": "integer",
+						"minimum": 0
+					}
+				},
+				"required": [
+					"cpu",
+					"mem",
+					"disk"
+				]
+			}
+		},
+		"parameters": {}
+	},
+	"paths": {
+		"/api/v1/node/proxy/install.sh": {
+			"get": {
+				"tags": [
+					"node-proxy"
+				],
+				"summary": "Install script for the proxy program (run with --token or --uninstall)",
+				"responses": {
+					"200": {
+						"description": "POSIX shell script",
+						"content": {
+							"text/x-shellscript": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/node/proxy/install/claim": {
+			"post": {
+				"tags": [
+					"node-proxy"
+				],
+				"summary": "Exchange a one-time install token for the node config",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/NodeInstallClaim"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NodeInstallConfig"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token invalid, expired or for another program",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "No release of the program is known yet",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/node/proxy/config": {
+			"get": {
+				"tags": [
+					"node-proxy"
+				],
+				"summary": "Landing config (inbounds, DNS, outbounds, block rules)",
+				"security": [
+					{
+						"node": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyConfig"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Config unchanged since If-None-Match"
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/node/proxy/alive": {
+			"get": {
+				"tags": [
+					"node-proxy"
+				],
+				"summary": "Online devices per subscription across all servers (device limits)",
+				"description": "Poll with the user list. A uid's list length is its online device count. Refuse a client IP for a uid whose count has reached its device_limit unless the IP's hash is in the list or this node reported it online last time: the same device reconnecting or moving between servers isn't a new one",
+				"security": [
+					{
+						"node": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyAlive"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/node/proxy/users": {
+			"get": {
+				"tags": [
+					"node-proxy"
+				],
+				"summary": "Users allowed on one inbound: usable subscriptions the node rules grant it to",
+				"description": "`id` is the subscription's uid (traffic and online reports use it). Send If-None-Match with the last ETag: 304 when nothing changed",
+				"security": [
+					{
+						"node": []
+					}
+				],
+				"parameters": [
+					{
+						"schema": {
+							"type": "string"
+						},
+						"required": true,
+						"name": "inbound",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyUsers"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Users unchanged since If-None-Match"
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/node/proxy/report": {
+			"post": {
+				"tags": [
+					"node-proxy"
+				],
+				"summary": "Status, traffic and online report",
+				"security": [
+					{
+						"node": []
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ProxyReport"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NodeReportAck"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"webhooks": {}
+}
