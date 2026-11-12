@@ -1272,6 +1272,8 @@
 							"POST /proxy/protocols/{id}/regenerate-keys",
 							"POST /proxy/relays",
 							"POST /proxy/relays/batch",
+							"POST /proxy/relays/upgrade-outdated",
+							"POST /proxy/relays/versions/refresh",
 							"POST /proxy/relays/{id}/copy",
 							"POST /proxy/relays/{id}/install-command",
 							"POST /proxy/relays/{id}/targets/{targetId}/rotate-token",
@@ -1281,6 +1283,8 @@
 							"POST /proxy/servers/import",
 							"POST /proxy/servers/rebuild",
 							"POST /proxy/servers/settings/reset-secret",
+							"POST /proxy/servers/upgrade-outdated",
+							"POST /proxy/servers/versions/refresh",
 							"POST /proxy/servers/{id}/copy",
 							"POST /proxy/servers/{id}/install-command",
 							"POST /proxy/servers/{id}/upgrade",
@@ -2951,14 +2955,6 @@
 						"type": "boolean",
 						"default": true
 					},
-					"node_name": {
-						"type": [
-							"string",
-							"null"
-						],
-						"maxLength": 64,
-						"default": null
-					},
 					"tags": {
 						"type": "array",
 						"items": {
@@ -3097,14 +3093,6 @@
 						"maximum": 100,
 						"default": null
 					},
-					"node_name": {
-						"type": [
-							"string",
-							"null"
-						],
-						"maxLength": 64,
-						"default": null
-					},
 					"tags": {
 						"type": "array",
 						"items": {
@@ -3229,6 +3217,110 @@
 					"templates",
 					"settings",
 					"warnings"
+				]
+			},
+			"ProxyLatestVersions": {
+				"type": "object",
+				"properties": {
+					"proxy": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"relay": {
+						"type": [
+							"string",
+							"null"
+						]
+					}
+				},
+				"required": [
+					"proxy",
+					"relay"
+				]
+			},
+			"ProxyVersionsRefresh": {
+				"type": "object",
+				"properties": {
+					"latestVersions": {
+						"$ref": "#/components/schemas/ProxyLatestVersions"
+					},
+					"failed": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"latestVersions",
+					"failed"
+				]
+			},
+			"ProxyBatchResult": {
+				"type": "object",
+				"properties": {
+					"updated": {
+						"type": "array",
+						"items": {
+							"type": "integer"
+						}
+					},
+					"skipped": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "integer"
+								},
+								"code": {
+									"$ref": "#/components/schemas/ProxyIssue"
+								},
+								"reason": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"id",
+								"code",
+								"reason"
+							]
+						}
+					}
+				},
+				"required": [
+					"updated",
+					"skipped"
+				]
+			},
+			"ProxyIssue": {
+				"type": "string",
+				"enum": [
+					"server_not_found",
+					"version_unknown",
+					"protocol_not_found",
+					"routing_item_not_found",
+					"duplicate_id",
+					"duplicate_name",
+					"field_not_overridable",
+					"invalid_value",
+					"invalid_template",
+					"already_attached",
+					"not_attached",
+					"already_excluded",
+					"port_in_use",
+					"port_out_of_range",
+					"port_range_invalid",
+					"address_required",
+					"landing_not_found",
+					"exit_not_found",
+					"exit_is_self",
+					"exit_duplicate",
+					"exit_in_use",
+					"tunnel_port_missing",
+					"listen_port_required",
+					"private_target",
+					"target_exists",
+					"no_target"
 				]
 			},
 			"ProxyServer": {
@@ -3727,73 +3819,6 @@
 					"inSync",
 					"load",
 					"error"
-				]
-			},
-			"ProxyBatchResult": {
-				"type": "object",
-				"properties": {
-					"updated": {
-						"type": "array",
-						"items": {
-							"type": "integer"
-						}
-					},
-					"skipped": {
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"id": {
-									"type": "integer"
-								},
-								"code": {
-									"$ref": "#/components/schemas/ProxyIssue"
-								},
-								"reason": {
-									"type": "string"
-								}
-							},
-							"required": [
-								"id",
-								"code",
-								"reason"
-							]
-						}
-					}
-				},
-				"required": [
-					"updated",
-					"skipped"
-				]
-			},
-			"ProxyIssue": {
-				"type": "string",
-				"enum": [
-					"server_not_found",
-					"protocol_not_found",
-					"routing_item_not_found",
-					"duplicate_id",
-					"duplicate_name",
-					"field_not_overridable",
-					"invalid_value",
-					"invalid_template",
-					"already_attached",
-					"not_attached",
-					"already_excluded",
-					"port_in_use",
-					"port_out_of_range",
-					"port_range_invalid",
-					"address_required",
-					"landing_not_found",
-					"exit_not_found",
-					"exit_is_self",
-					"exit_duplicate",
-					"exit_in_use",
-					"tunnel_port_missing",
-					"listen_port_required",
-					"private_target",
-					"target_exists",
-					"no_target"
 				]
 			},
 			"ProxyServerBatchAction": {
@@ -14083,6 +14108,187 @@
 				}
 			}
 		},
+		"/api/v1/admin/proxy/servers/versions": {
+			"get": {
+				"tags": [
+					"proxy-servers"
+				],
+				"summary": "Latest released versions of the node programs",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyLatestVersions"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/servers/versions/refresh": {
+			"post": {
+				"tags": [
+					"proxy-servers"
+				],
+				"summary": "Read the latest released versions now instead of waiting for the daily check",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyVersionsRefresh"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/servers/upgrade-outdated": {
+			"post": {
+				"tags": [
+					"proxy-servers"
+				],
+				"summary": "Upgrade every landing server running an older version to the latest",
+				"description": "Offline servers are included and upgrade when they come back; servers that never reported a version are skipped",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyBatchResult"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/v1/admin/proxy/servers/settings": {
 			"get": {
 				"tags": [
@@ -15630,11 +15836,82 @@
 			}
 		},
 		"/api/v1/admin/proxy/servers/{id}/install-command": {
+			"get": {
+				"tags": [
+					"proxy-servers"
+				],
+				"summary": "Install command for the proxy program",
+				"description": "The token works once within an hour; until then every call returns the same command. Running nodes don't use it",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyInstallCommand"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
 			"post": {
 				"tags": [
 					"proxy-servers"
 				],
-				"summary": "One-time install command for the proxy program",
+				"summary": "Replace the install command for the proxy program",
+				"description": "The previous command stops working at once. Running nodes aren't affected",
 				"parameters": [
 					{
 						"schema": {
@@ -15951,6 +16228,187 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/ProxyRouting"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/relays/versions": {
+			"get": {
+				"tags": [
+					"proxy-relays"
+				],
+				"summary": "Latest released versions of the node programs",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyLatestVersions"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/relays/versions/refresh": {
+			"post": {
+				"tags": [
+					"proxy-relays"
+				],
+				"summary": "Read the latest released versions now instead of waiting for the daily check",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyVersionsRefresh"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/relays/upgrade-outdated": {
+			"post": {
+				"tags": [
+					"proxy-relays"
+				],
+				"summary": "Upgrade every relay server running an older version to the latest",
+				"description": "Offline servers are included and upgrade when they come back; servers that never reported a version are skipped",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyBatchResult"
 								}
 							}
 						}
@@ -17275,11 +17733,82 @@
 			}
 		},
 		"/api/v1/admin/proxy/relays/{id}/install-command": {
+			"get": {
+				"tags": [
+					"proxy-relays"
+				],
+				"summary": "Install command for the relay agent",
+				"description": "The token works once within an hour; until then every call returns the same command. Running nodes don't use it",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"exclusiveMinimum": 0
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProxyInstallCommand"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
 			"post": {
 				"tags": [
 					"proxy-relays"
 				],
-				"summary": "One-time install command for the relay agent",
+				"summary": "Replace the install command for the relay agent",
+				"description": "The previous command stops working at once. Running nodes aren't affected",
 				"parameters": [
 					{
 						"schema": {
