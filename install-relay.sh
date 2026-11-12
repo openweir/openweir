@@ -128,6 +128,8 @@ ExecStart=/usr/local/lib/openweir-relay/openweir-relay -config /etc/openweir/rel
 Restart=always
 RestartSec=5s
 LimitNOFILE=65536
+# The relay reads /proc/net to tell which ports other programs hold: don't add ProcSubset=pid or
+# PrivateNetwork=yes (it would no longer see them, nor listen on the host's network)
 User=openweir-relay
 Group=openweir-relay
 AmbientCapabilities=CAP_NET_BIND_SERVICE
@@ -173,6 +175,8 @@ command_args="-config /etc/openweir/relay/relay.env"
 command_user="openweir-relay:openweir-relay"
 # Needs OpenRC 0.45+; older versions fall back to the file capability set at install
 capabilities="^cap_net_bind_service"
+# The relay reads /proc/net to tell which ports other programs hold: don't hide it (no
+# procfs subset or separate network namespace)
 supervisor=supervise-daemon
 respawn_delay=5
 pidfile="/run/${RC_SVCNAME}.pid"

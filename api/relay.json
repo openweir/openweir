@@ -97,6 +97,16 @@
 							"push_interval": {
 								"type": "integer"
 							},
+							"port_min": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 65535
+							},
+							"port_max": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 65535
+							},
 							"rules": {
 								"type": "array",
 								"items": {
@@ -185,6 +195,8 @@
 						"required": [
 							"pull_interval",
 							"push_interval",
+							"port_min",
+							"port_max",
 							"rules",
 							"tunnel",
 							"exits"
@@ -439,12 +451,120 @@
 						},
 						"maxItems": 10000,
 						"default": []
+					},
+					"listen_failures": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"rule_id": {
+									"type": "string",
+									"maxLength": 256
+								},
+								"port": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 65535
+								},
+								"network": {
+									"type": "string",
+									"enum": [
+										"tcp",
+										"udp",
+										"tcp,udp"
+									]
+								},
+								"reason": {
+									"type": "string",
+									"enum": [
+										"in_use",
+										"permission",
+										"other"
+									]
+								},
+								"message": {
+									"type": "string",
+									"maxLength": 200
+								},
+								"revision": {
+									"type": "string",
+									"maxLength": 128
+								}
+							},
+							"required": [
+								"rule_id",
+								"port",
+								"network",
+								"reason",
+								"message",
+								"revision"
+							]
+						},
+						"maxItems": 256
+					},
+					"busy_ports": {
+						"type": [
+							"object",
+							"null"
+						],
+						"properties": {
+							"tcp": {
+								"type": "array",
+								"items": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 65535
+								},
+								"maxItems": 256
+							},
+							"udp": {
+								"type": "array",
+								"items": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 65535
+								},
+								"maxItems": 256
+							}
+						},
+						"required": [
+							"tcp",
+							"udp"
+						]
+					},
+					"ephemeral_range": {
+						"type": [
+							"array",
+							"null"
+						],
+						"prefixItems": [
+							{
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 65535
+							},
+							{
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 65535
+							}
+						]
+					},
+					"privileged_ports": {
+						"type": [
+							"boolean",
+							"null"
+						]
 					}
 				},
 				"required": [
 					"applied_revision",
 					"version",
-					"seq"
+					"seq",
+					"listen_failures",
+					"busy_ports",
+					"ephemeral_range",
+					"privileged_ports"
 				]
 			},
 			"NodeLoad": {

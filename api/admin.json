@@ -1316,7 +1316,8 @@
 							"PUT /proxy/subscriptions/rules",
 							"PUT /settings",
 							"PUT /site/{image}",
-							"PUT /users/{id}/avatar"
+							"PUT /users/{id}/avatar",
+							"system:relay.port_reassigned"
 						]
 					},
 					"method": {
@@ -4360,12 +4361,73 @@
 											"null"
 										],
 										"format": "date-time"
+									},
+									"listenFailures": {
+										"type": "array",
+										"items": {
+											"$ref": "#/components/schemas/ProxyRelayListenFailure"
+										}
+									},
+									"portReassignments": {
+										"type": "array",
+										"items": {
+											"$ref": "#/components/schemas/ProxyRelayPortReassignment"
+										}
+									},
+									"busyPorts": {
+										"type": [
+											"object",
+											"null"
+										],
+										"properties": {
+											"tcp": {
+												"type": "array",
+												"items": {
+													"type": "integer"
+												}
+											},
+											"udp": {
+												"type": "array",
+												"items": {
+													"type": "integer"
+												}
+											}
+										},
+										"required": [
+											"tcp",
+											"udp"
+										]
+									},
+									"ephemeralRange": {
+										"type": [
+											"array",
+											"null"
+										],
+										"prefixItems": [
+											{
+												"type": "integer"
+											},
+											{
+												"type": "integer"
+											}
+										]
+									},
+									"privilegedPorts": {
+										"type": [
+											"boolean",
+											"null"
+										]
 									}
 								},
 								"required": [
 									"tunnelFingerprint",
 									"egressStatus",
-									"egressReportedAt"
+									"egressReportedAt",
+									"listenFailures",
+									"portReassignments",
+									"busyPorts",
+									"ephemeralRange",
+									"privilegedPorts"
 								]
 							}
 						]
@@ -4535,6 +4597,129 @@
 					"targetTraffic",
 					"isEntry",
 					"isExit"
+				]
+			},
+			"ProxyRelayListenFailure": {
+				"type": "object",
+				"properties": {
+					"ruleId": {
+						"type": "string"
+					},
+					"port": {
+						"type": "integer"
+					},
+					"network": {
+						"type": "string",
+						"enum": [
+							"tcp",
+							"udp",
+							"tcp,udp"
+						]
+					},
+					"reason": {
+						"type": "string",
+						"enum": [
+							"in_use",
+							"permission",
+							"other"
+						]
+					},
+					"message": {
+						"type": "string"
+					},
+					"targetId": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"targetName": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"protocol": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"pinned": {
+						"type": "boolean"
+					},
+					"gaveUp": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"ruleId",
+					"port",
+					"network",
+					"reason",
+					"message",
+					"targetId",
+					"targetName",
+					"protocol",
+					"pinned",
+					"gaveUp"
+				]
+			},
+			"ProxyRelayPortReassignment": {
+				"type": "object",
+				"properties": {
+					"at": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"ruleId": {
+						"type": "string"
+					},
+					"targetId": {
+						"type": "string"
+					},
+					"targetName": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"protocol": {
+						"type": "string"
+					},
+					"network": {
+						"type": "string",
+						"enum": [
+							"tcp",
+							"udp",
+							"tcp,udp"
+						]
+					},
+					"from": {
+						"type": "integer"
+					},
+					"to": {
+						"type": "integer"
+					},
+					"reason": {
+						"type": "string",
+						"enum": [
+							"in_use",
+							"permission",
+							"other"
+						]
+					}
+				},
+				"required": [
+					"at",
+					"ruleId",
+					"targetId",
+					"targetName",
+					"protocol",
+					"network",
+					"from",
+					"to",
+					"reason"
 				]
 			},
 			"ProxyRelayServerBatchAction": {

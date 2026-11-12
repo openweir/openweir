@@ -166,10 +166,10 @@
 							"kv": {
 								"type": "boolean"
 							},
-							"queue": {
+							"r2": {
 								"type": "boolean"
 							},
-							"r2": {
+							"queue": {
 								"type": "boolean"
 							}
 						},
@@ -177,8 +177,8 @@
 							"d1",
 							"migrations",
 							"kv",
-							"queue",
-							"r2"
+							"r2",
+							"queue"
 						]
 					}
 				},
@@ -1791,7 +1791,7 @@
 					"health"
 				],
 				"summary": "Service health for uptime monitors (public)",
-				"description": "D1 reachable and migrated, KV, queues and R2 bound. 503 when any check fails, and before the site is installed",
+				"description": "D1 reachable and migrated, KV, R2 and queues bound. 503 when any check fails, and before the site is installed",
 				"responses": {
 					"200": {
 						"description": "OK",
