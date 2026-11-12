@@ -10,7 +10,6 @@ OpenWeir is a panel for running a proxy service on Cloudflare Workers, with two 
 This repository is where OpenWeir is published. It holds:
 
 - node program releases
-- the install scripts
 - the latest version of each component
 - the panel's OpenAPI documents
 
@@ -21,11 +20,10 @@ The source repositories are separate.
 | Path | Contents |
 |---|---|
 | [Releases](../../releases) | `proxy-vX.Y.Z` and `relay-vX.Y.Z`: binaries for linux amd64 and arm64 with `SHA256SUMS` |
-| [`install-proxy.sh`](install-proxy.sh), [`install-relay.sh`](install-relay.sh) | Installer of each node program, the same scripts the panel serves |
 | [`versions.json`](versions.json) | Latest version of each component, read by the panel every day |
 | [`api/`](api) | OpenAPI documents of the panel and the node API |
 
-The install scripts and everything under `api/` are copied here by the panel's CI. Don't edit them in this repository.
+Everything under `api/` is copied here by the panel's CI. Don't edit them in this repository.
 
 ## Install a node
 
@@ -45,14 +43,7 @@ The token is valid for one hour and works once. The script:
 
 Running the script again reinstalls or upgrades the node.
 
-The panel serves the script itself, so servers that can't reach GitHub can still fetch it. Only the binary download needs GitHub or a mirror.
-
-You can also run the copies in this repository; pass the panel address yourself:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/openweir/openweir/main/install-relay.sh \
-  | sh -s -- --panel https://<panel> --token <token>
-```
+Only the panel serves the script, so servers that can't reach GitHub can still fetch it. Only the binary download needs GitHub or a mirror.
 
 To uninstall:
 

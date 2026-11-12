@@ -10,7 +10,6 @@ OpenWeir 是运行在 Cloudflare Workers 上的代理服务面板，配有两个
 这个仓库专门用来对外发布 OpenWeir，里面有：
 
 - 节点程序的发布版本
-- 安装脚本
 - 各组件的最新版本号
 - 面板的 OpenAPI 文档
 
@@ -21,11 +20,10 @@ OpenWeir 是运行在 Cloudflare Workers 上的代理服务面板，配有两个
 | 位置 | 内容 |
 |---|---|
 | [Releases](../../releases) | `proxy-vX.Y.Z`、`relay-vX.Y.Z`：linux amd64 / arm64 二进制和 `SHA256SUMS` |
-| [`install-proxy.sh`](install-proxy.sh)、[`install-relay.sh`](install-relay.sh) | 两个节点程序各自的安装脚本，和面板提供的是同一份 |
 | [`versions.json`](versions.json) | 各组件的最新版本号，面板每天读取一次 |
 | [`api/`](api) | 面板和节点接口的 OpenAPI 文档 |
 
-安装脚本和 `api/` 下的文件由面板仓库的 CI 自动同步过来，不要在这里直接修改。
+`api/` 下的文件由面板仓库的 CI 自动同步过来，不要在这里直接修改。
 
 ## 安装节点
 
@@ -45,14 +43,7 @@ curl -fsSL https://<面板地址>/api/v1/node/<proxy|relay>/install.sh | sh -s -
 
 重新运行脚本就是重装或升级。
 
-脚本本身由面板提供，所以访问不了 GitHub 的服务器也能拿到脚本；只有下载二进制需要访问 GitHub 或镜像。
-
-也可以直接用本仓库里的脚本，这时需要自己传入面板地址：
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/openweir/openweir/main/install-relay.sh \
-  | sh -s -- --panel https://<面板地址> --token <令牌>
-```
+脚本只由面板提供，所以访问不了 GitHub 的服务器也能拿到脚本；只有下载二进制需要访问 GitHub 或镜像。
 
 卸载：
 
