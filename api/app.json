@@ -210,6 +210,23 @@
 					},
 					"providerId": {
 						"type": "string"
+					},
+					"options": {
+						"type": "object",
+						"properties": {
+							"allowSignUp": {
+								"type": "boolean"
+							},
+							"requireEmailVerification": {
+								"type": "boolean"
+							},
+							"minPasswordLength": {
+								"type": "integer"
+							},
+							"otpLength": {
+								"type": "integer"
+							}
+						}
 					}
 				},
 				"required": [
@@ -494,6 +511,15 @@
 							"null"
 						]
 					},
+					"urls": {
+						"type": [
+							"array",
+							"null"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
 					"createdAt": {
 						"type": "string",
 						"format": "date-time"
@@ -526,6 +552,7 @@
 					"autoRenew",
 					"onlineDevices",
 					"url",
+					"urls",
 					"createdAt",
 					"updatedAt"
 				]
@@ -615,12 +642,22 @@
 							"string",
 							"null"
 						]
+					},
+					"urls": {
+						"type": [
+							"array",
+							"null"
+						],
+						"items": {
+							"type": "string"
+						}
 					}
 				},
 				"required": [
 					"subscription",
 					"token",
-					"url"
+					"url",
+					"urls"
 				]
 			},
 			"BillingSubscriptionDevices": {
@@ -976,12 +1013,22 @@
 									"string",
 									"null"
 								]
+							},
+							"urls": {
+								"type": [
+									"array",
+									"null"
+								],
+								"items": {
+									"type": "string"
+								}
 							}
 						},
 						"required": [
 							"id",
 							"token",
-							"url"
+							"url",
+							"urls"
 						]
 					}
 				},

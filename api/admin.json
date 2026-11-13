@@ -75,16 +75,12 @@
 							},
 							"paying": {
 								"type": "integer"
-							},
-							"anonymous": {
-								"type": "integer"
 							}
 						},
 						"required": [
 							"total",
 							"new",
-							"paying",
-							"anonymous"
+							"paying"
 						]
 					},
 					"subscriptions": {
@@ -1758,6 +1754,20 @@
 									"app"
 								]
 							},
+							"subscriptionDomains": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"maxItems": 10
+							},
+							"subscriptionPath": {
+								"type": [
+									"string",
+									"null"
+								],
+								"maxLength": 128
+							},
 							"nodeName": {
 								"type": [
 									"string",
@@ -3321,7 +3331,12 @@
 					"listen_port_required",
 					"private_target",
 					"target_exists",
-					"no_target"
+					"no_target",
+					"invalid_domain",
+					"duplicate_domain",
+					"domain_is_panel",
+					"invalid_path",
+					"path_reserved"
 				]
 			},
 			"ProxyServer": {
@@ -5770,6 +5785,15 @@
 							"null"
 						]
 					},
+					"urls": {
+						"type": [
+							"array",
+							"null"
+						],
+						"items": {
+							"type": "string"
+						}
+					},
 					"createdAt": {
 						"type": "string",
 						"format": "date-time"
@@ -5802,6 +5826,7 @@
 					"autoRenew",
 					"onlineDevices",
 					"url",
+					"urls",
 					"createdAt",
 					"updatedAt"
 				]
@@ -5820,12 +5845,22 @@
 							"string",
 							"null"
 						]
+					},
+					"urls": {
+						"type": [
+							"array",
+							"null"
+						],
+						"items": {
+							"type": "string"
+						}
 					}
 				},
 				"required": [
 					"subscription",
 					"token",
-					"url"
+					"url",
+					"urls"
 				]
 			},
 			"BillingSubscriptionDevices": {
@@ -8842,14 +8877,6 @@
 						},
 						"required": false,
 						"name": "emailVerified",
-						"in": "query"
-					},
-					{
-						"schema": {
-							"type": "string"
-						},
-						"required": false,
-						"name": "anonymous",
 						"in": "query"
 					},
 					{
@@ -14611,6 +14638,20 @@
 											"both",
 											"app"
 										]
+									},
+									"subscriptionDomains": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										},
+										"maxItems": 10
+									},
+									"subscriptionPath": {
+										"type": [
+											"string",
+											"null"
+										],
+										"maxLength": 128
 									},
 									"latestVersions": {
 										"type": "object",
