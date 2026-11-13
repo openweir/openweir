@@ -3039,21 +3039,32 @@
 						},
 						"default": null
 					},
-					"host": {
+					"addresses": {
 						"type": [
-							"string",
+							"array",
 							"null"
 						],
-						"maxLength": 253,
-						"default": null
-					},
-					"port": {
-						"type": [
-							"integer",
-							"null"
-						],
-						"minimum": 1,
-						"maximum": 65535,
+						"items": {
+							"type": "object",
+							"properties": {
+								"host": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 253
+								},
+								"port": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 65535
+								}
+							},
+							"required": [
+								"host",
+								"port"
+							]
+						},
+						"minItems": 1,
+						"maxItems": 32,
 						"default": null
 					},
 					"listen_port": {
@@ -3327,6 +3338,7 @@
 					"exit_not_found",
 					"exit_is_self",
 					"exit_duplicate",
+					"address_duplicate",
 					"exit_in_use",
 					"tunnel_port_missing",
 					"listen_port_required",
