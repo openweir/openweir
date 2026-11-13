@@ -1311,6 +1311,7 @@
 							"PUT /proxy/servers/{id}/endpoints",
 							"PUT /proxy/subscriptions/rules",
 							"PUT /settings",
+							"PUT /settings/domains",
 							"PUT /site/{image}",
 							"PUT /users/{id}/avatar",
 							"system:relay.port_reassigned"
@@ -3336,7 +3337,8 @@
 					"duplicate_domain",
 					"domain_is_panel",
 					"invalid_path",
-					"path_reserved"
+					"path_reserved",
+					"reality_transport"
 				]
 			},
 			"ProxyServer": {
@@ -7255,7 +7257,7 @@
 				"tags": [
 					"settings"
 				],
-				"summary": "Update system settings (partial, by group)",
+				"summary": "Update system settings (partial, by group); trusted origins go through /domains",
 				"requestBody": {
 					"content": {
 						"application/json": {
@@ -7294,19 +7296,6 @@
 													"zh-CN"
 												],
 												"default": "en-US"
-											}
-										}
-									},
-									"security": {
-										"type": "object",
-										"properties": {
-											"trustedOrigins": {
-												"type": "array",
-												"items": {
-													"type": "string",
-													"format": "uri"
-												},
-												"default": []
 											}
 										}
 									},
@@ -7843,6 +7832,257 @@
 												}
 											},
 											"default": {}
+										}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/settings/domains": {
+			"get": {
+				"tags": [
+					"settings"
+				],
+				"summary": "Addresses: trusted front-end origins, the panel URL nodes use and subscription links",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"trustedOrigins": {
+											"type": "array",
+											"items": {
+												"type": "string",
+												"format": "uri"
+											},
+											"default": []
+										},
+										"panelUrl": {
+											"type": [
+												"string",
+												"null"
+											],
+											"format": "uri",
+											"default": null
+										},
+										"subscriptionAccess": {
+											"type": "string",
+											"enum": [
+												"link",
+												"both",
+												"app"
+											],
+											"default": "link"
+										},
+										"subscriptionDomains": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"maxItems": 10,
+											"default": []
+										},
+										"subscriptionPath": {
+											"type": [
+												"string",
+												"null"
+											],
+											"maxLength": 128,
+											"default": null
+										}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": [
+					"settings"
+				],
+				"summary": "Update addresses (partial); a changed panel URL or subscription link regenerates every server's config",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"trustedOrigins": {
+										"type": "array",
+										"items": {
+											"type": "string",
+											"format": "uri"
+										}
+									},
+									"panelUrl": {
+										"type": [
+											"string",
+											"null"
+										],
+										"format": "uri"
+									},
+									"subscriptionAccess": {
+										"type": "string",
+										"enum": [
+											"link",
+											"both",
+											"app"
+										]
+									},
+									"subscriptionDomains": {
+										"type": "array",
+										"items": {
+											"type": "string"
+										},
+										"maxItems": 10
+									},
+									"subscriptionPath": {
+										"type": [
+											"string",
+											"null"
+										],
+										"maxLength": 128
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"trustedOrigins": {
+											"type": "array",
+											"items": {
+												"type": "string",
+												"format": "uri"
+											},
+											"default": []
+										},
+										"panelUrl": {
+											"type": [
+												"string",
+												"null"
+											],
+											"format": "uri",
+											"default": null
+										},
+										"subscriptionAccess": {
+											"type": "string",
+											"enum": [
+												"link",
+												"both",
+												"app"
+											],
+											"default": "link"
+										},
+										"subscriptionDomains": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											},
+											"maxItems": 10,
+											"default": []
+										},
+										"subscriptionPath": {
+											"type": [
+												"string",
+												"null"
+											],
+											"maxLength": 128,
+											"default": null
 										}
 									}
 								}
@@ -14631,28 +14871,6 @@
 											"additionalProperties": {}
 										}
 									},
-									"subscriptionAccess": {
-										"type": "string",
-										"enum": [
-											"link",
-											"both",
-											"app"
-										]
-									},
-									"subscriptionDomains": {
-										"type": "array",
-										"items": {
-											"type": "string"
-										},
-										"maxItems": 10
-									},
-									"subscriptionPath": {
-										"type": [
-											"string",
-											"null"
-										],
-										"maxLength": 128
-									},
 									"latestVersions": {
 										"type": "object",
 										"properties": {
@@ -14671,13 +14889,6 @@
 												"default": null
 											}
 										}
-									},
-									"panelUrl": {
-										"type": [
-											"string",
-											"null"
-										],
-										"format": "uri"
 									},
 									"releasesUrl": {
 										"type": "string",
