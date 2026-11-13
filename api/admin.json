@@ -4799,6 +4799,52 @@
 								},
 								"default": null
 							},
+							"addresses": {
+								"type": [
+									"array",
+									"null"
+								],
+								"items": {
+									"type": "object",
+									"properties": {
+										"host": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 253
+										},
+										"port": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 65535
+										}
+									},
+									"required": [
+										"host",
+										"port"
+									]
+								},
+								"minItems": 1,
+								"maxItems": 32,
+								"default": null
+							},
+							"listen_port": {
+								"type": [
+									"integer",
+									"null"
+								],
+								"minimum": 1,
+								"maximum": 65535,
+								"default": null
+							},
+							"network": {
+								"type": "string",
+								"enum": [
+									"tcp",
+									"udp",
+									"tcp,udp"
+								],
+								"default": "tcp,udp"
+							},
 							"exit_server_ids": {
 								"type": "array",
 								"items": {
@@ -5003,6 +5049,56 @@
 							"version"
 						]
 					}
+				]
+			},
+			"ProxyRelayServerDetail": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/ProxyRelayServer"
+					},
+					{
+						"type": "object",
+						"properties": {
+							"targetRules": {
+								"type": "object",
+								"additionalProperties": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/ProxyRelayTargetRule"
+									}
+								}
+							}
+						},
+						"required": [
+							"targetRules"
+						]
+					}
+				]
+			},
+			"ProxyRelayTargetRule": {
+				"type": "object",
+				"properties": {
+					"ruleId": {
+						"type": "string"
+					},
+					"port": {
+						"type": "integer"
+					},
+					"ratio": {
+						"type": "number"
+					},
+					"dests": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"required": [
+					"ruleId",
+					"port",
+					"ratio",
+					"dests"
 				]
 			},
 			"ProxyNode": {
@@ -6954,7 +7050,7 @@
 												},
 												"timezone": {
 													"type": "string",
-													"default": "Asia/Shanghai"
+													"default": "UTC"
 												},
 												"defaultLocale": {
 													"type": "string",
@@ -7299,7 +7395,7 @@
 											},
 											"timezone": {
 												"type": "string",
-												"default": "Asia/Shanghai"
+												"default": "UTC"
 											},
 											"defaultLocale": {
 												"type": "string",
@@ -7581,7 +7677,7 @@
 												},
 												"timezone": {
 													"type": "string",
-													"default": "Asia/Shanghai"
+													"default": "UTC"
 												},
 												"defaultLocale": {
 													"type": "string",
@@ -17533,7 +17629,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ProxyRelayServer"
+									"$ref": "#/components/schemas/ProxyRelayServerDetail"
 								}
 							}
 						}
