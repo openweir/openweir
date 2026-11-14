@@ -410,6 +410,22 @@
 						"type": "integer",
 						"minimum": 0
 					},
+					"egress_page": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"part": {
+								"type": "integer",
+								"minimum": 0
+							}
+						},
+						"required": [
+							"id",
+							"part"
+						]
+					},
 					"rotate_secret": {
 						"type": "string",
 						"description": "New node secret: save it to the config file and use it from now on"
