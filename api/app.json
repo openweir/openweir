@@ -236,6 +236,73 @@
 					"category"
 				]
 			},
+			"CaptchaConfig": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": [
+							"string",
+							"null"
+						],
+						"enum": [
+							"turnstile",
+							"recaptcha",
+							"hcaptcha",
+							null
+						]
+					},
+					"siteKey": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"scenes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/CaptchaScene"
+						}
+					},
+					"recaptcha": {
+						"type": [
+							"object",
+							"null"
+						],
+						"properties": {
+							"version": {
+								"type": "string",
+								"enum": [
+									"v2",
+									"v3"
+								]
+							},
+							"host": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"version",
+							"host"
+						]
+					}
+				},
+				"required": [
+					"type",
+					"siteKey",
+					"scenes",
+					"recaptcha"
+				]
+			},
+			"CaptchaScene": {
+				"type": "string",
+				"enum": [
+					"sign_up",
+					"sign_in",
+					"password_reset",
+					"send_code",
+					"magic_link"
+				]
+			},
 			"ProxyMyNodes": {
 				"type": "object",
 				"properties": {
@@ -1919,6 +1986,27 @@
 									"items": {
 										"$ref": "#/components/schemas/AuthProvider"
 									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/captcha": {
+			"get": {
+				"tags": [
+					"captcha"
+				],
+				"summary": "Captcha the frontend should show (public)",
+				"description": "Send the token in the `x-captcha-response` header on the Better Auth endpoints of each listed scene. OTP password-reset requests require a token when either password_reset or send_code is enabled, including /email-otp/send-verification-otp with type forget-password. Other OTP requests follow send_code. Missing tokens get 400 MISSING_RESPONSE, rejected ones 403 VERIFICATION_FAILED, and 500 UNKNOWN_ERROR when the provider can't be reached",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CaptchaConfig"
 								}
 							}
 						}
@@ -3913,6 +4001,9 @@
 					},
 					"404": {
 						"description": "Unknown channel or order"
+					},
+					"413": {
+						"description": "Request body is larger than 1 MB"
 					}
 				}
 			},
@@ -3940,6 +4031,9 @@
 					},
 					"404": {
 						"description": "Unknown channel or order"
+					},
+					"413": {
+						"description": "Request body is larger than 1 MB"
 					}
 				}
 			}
