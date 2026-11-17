@@ -426,6 +426,22 @@
 							"part"
 						]
 					},
+					"online_page": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string"
+							},
+							"part": {
+								"type": "integer",
+								"minimum": 0
+							}
+						},
+						"required": [
+							"id",
+							"part"
+						]
+					},
 					"rotate_secret": {
 						"type": "string",
 						"description": "New node secret: save it to the config file and use it from now on"
@@ -449,6 +465,10 @@
 					"load": {
 						"$ref": "#/components/schemas/NodeLoad"
 					},
+					"sampled_at": {
+						"type": "integer",
+						"minimum": 0
+					},
 					"error": {
 						"type": "string",
 						"maxLength": 2000
@@ -464,6 +484,10 @@
 							"properties": {
 								"inbound_id": {
 									"type": "string"
+								},
+								"revision": {
+									"type": "string",
+									"maxLength": 128
 								},
 								"uid": {
 									"type": "integer"
@@ -508,8 +532,36 @@
 								"ip"
 							]
 						},
-						"maxItems": 100000,
-						"default": []
+						"maxItems": 100000
+					},
+					"online_page": {
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string",
+								"pattern": "^[0-9a-f]{32}$"
+							},
+							"part": {
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 4095
+							},
+							"parts": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 4096
+							},
+							"captured_at": {
+								"type": "integer",
+								"minimum": 0
+							}
+						},
+						"required": [
+							"id",
+							"part",
+							"parts",
+							"captured_at"
+						]
 					},
 					"rejected_sources": {
 						"type": "array",
@@ -884,6 +936,33 @@
 				"security": [
 					{
 						"node": []
+					}
+				],
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 128,
+							"description": "Fallback accounting revision for unlabeled records in a minimal traffic envelope"
+						},
+						"required": false,
+						"description": "Fallback accounting revision for unlabeled records in a minimal traffic envelope",
+						"name": "x-traffic-revision",
+						"in": "header"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"1",
+								"nic"
+							],
+							"description": "Preserve metadata while delivering a near-limit traffic batch; nic defers quota metering to interface counters"
+						},
+						"required": false,
+						"description": "Preserve metadata while delivering a near-limit traffic batch; nic defers quota metering to interface counters",
+						"name": "x-node-traffic-only",
+						"in": "header"
 					}
 				],
 				"requestBody": {
