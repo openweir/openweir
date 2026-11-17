@@ -1318,6 +1318,8 @@
 							"POST /proxy/servers/{id}/install-command",
 							"POST /proxy/servers/{id}/upgrade",
 							"POST /proxy/subscriptions/preview",
+							"POST /proxy/subscriptions/routing/sources/{id}/check",
+							"POST /proxy/subscriptions/routing/sources/{id}/merge",
 							"POST /proxy/subscriptions/templates",
 							"POST /proxy/subscriptions/templates/{id}/default",
 							"POST /users",
@@ -1344,6 +1346,8 @@
 							"PUT /proxy/routing",
 							"PUT /proxy/servers/settings",
 							"PUT /proxy/servers/{id}/endpoints",
+							"PUT /proxy/subscriptions/routing",
+							"PUT /proxy/subscriptions/routing/sources/{id}",
 							"PUT /proxy/subscriptions/rules",
 							"PUT /settings",
 							"PUT /settings/domains",
@@ -1782,6 +1786,9 @@
 								},
 								"maxItems": 2000
 							},
+							"clientRouting": {
+								"$ref": "#/components/schemas/NullableClientRouting"
+							},
 							"subscriptionAccess": {
 								"type": "string",
 								"enum": [
@@ -1848,6 +1855,171 @@
 								"type": "string",
 								"format": "uri"
 							}
+						}
+					},
+					"clientRulesets": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "object",
+							"properties": {
+								"version": {
+									"type": "number",
+									"enum": [
+										1
+									]
+								},
+								"rules": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"type": {
+												"type": "string",
+												"enum": [
+													"domain",
+													"domain_suffix",
+													"domain_keyword",
+													"domain_regex",
+													"ip_cidr",
+													"geoip",
+													"geosite",
+													"process_name",
+													"comment"
+												]
+											},
+											"value": {
+												"type": "string",
+												"minLength": 1,
+												"maxLength": 4096
+											},
+											"noResolve": {
+												"type": "boolean"
+											},
+											"comment": {
+												"type": "string",
+												"maxLength": 4096,
+												"pattern": "^#[^\\r\\n]*$"
+											}
+										},
+										"required": [
+											"type",
+											"value"
+										],
+										"additionalProperties": false
+									}
+								},
+								"local": {
+									"type": "object",
+									"properties": {
+										"added": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"type": {
+														"type": "string",
+														"enum": [
+															"domain",
+															"domain_suffix",
+															"domain_keyword",
+															"domain_regex",
+															"ip_cidr",
+															"geoip",
+															"geosite",
+															"process_name",
+															"comment"
+														]
+													},
+													"value": {
+														"type": "string",
+														"minLength": 1,
+														"maxLength": 4096
+													},
+													"noResolve": {
+														"type": "boolean"
+													},
+													"comment": {
+														"type": "string",
+														"maxLength": 4096,
+														"pattern": "^#[^\\r\\n]*$"
+													}
+												},
+												"required": [
+													"type",
+													"value"
+												],
+												"additionalProperties": false
+											}
+										},
+										"removed": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"type": {
+														"type": "string",
+														"enum": [
+															"domain",
+															"domain_suffix",
+															"domain_keyword",
+															"domain_regex",
+															"ip_cidr",
+															"geoip",
+															"geosite",
+															"process_name",
+															"comment"
+														]
+													},
+													"value": {
+														"type": "string",
+														"minLength": 1,
+														"maxLength": 4096
+													},
+													"noResolve": {
+														"type": "boolean"
+													},
+													"comment": {
+														"type": "string",
+														"maxLength": 4096,
+														"pattern": "^#[^\\r\\n]*$"
+													}
+												},
+												"required": [
+													"type",
+													"value"
+												],
+												"additionalProperties": false
+											}
+										}
+									},
+									"required": [
+										"added",
+										"removed"
+									]
+								},
+								"checkedAt": {
+									"type": [
+										"string",
+										"null"
+									],
+									"format": "date-time"
+								},
+								"updatedAt": {
+									"type": [
+										"string",
+										"null"
+									],
+									"format": "date-time"
+								}
+							},
+							"required": [
+								"version",
+								"rules",
+								"local",
+								"checkedAt",
+								"updatedAt"
+							],
+							"additionalProperties": false
 						}
 					},
 					"protocols": {
@@ -2723,6 +2895,184 @@
 					"type",
 					"target"
 				]
+			},
+			"NullableClientRouting": {
+				"type": [
+					"object",
+					"null"
+				],
+				"properties": {
+					"version": {
+						"type": "number",
+						"enum": [
+							1
+						]
+					},
+					"revision": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 64
+					},
+					"groups": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 64,
+									"pattern": "^[^,=\\r\\n[\\]#\"']+$"
+								},
+								"type": {
+									"type": "string",
+									"enum": [
+										"select",
+										"url-test",
+										"fallback"
+									]
+								},
+								"candidates": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+									},
+									"maxItems": 200
+								},
+								"interval": {
+									"type": "integer",
+									"minimum": 60,
+									"maximum": 86400
+								},
+								"url": {
+									"type": "string",
+									"maxLength": 2048,
+									"format": "uri"
+								}
+							},
+							"required": [
+								"id",
+								"name",
+								"type",
+								"candidates",
+								"interval",
+								"url"
+							]
+						},
+						"maxItems": 200
+					},
+					"items": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 64,
+									"pattern": "^[^,=\\r\\n[\\]#\"']+$"
+								},
+								"enabled": {
+									"type": "boolean"
+								},
+								"target": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								}
+							},
+							"required": [
+								"id",
+								"name",
+								"enabled",
+								"target"
+							],
+							"additionalProperties": false
+						},
+						"maxItems": 500
+					},
+					"sources": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 64,
+									"pattern": "^[^,=\\r\\n[\\]#\"']+$"
+								},
+								"url": {
+									"type": [
+										"string",
+										"null"
+									],
+									"maxLength": 2048,
+									"format": "uri"
+								}
+							},
+							"required": [
+								"id",
+								"name",
+								"url"
+							],
+							"additionalProperties": false
+						},
+						"maxItems": 2200
+					},
+					"rules": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"itemId": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"sourceId": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"line": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 4352
+								}
+							},
+							"required": [
+								"id",
+								"itemId"
+							],
+							"additionalProperties": false
+						},
+						"maxItems": 2000
+					}
+				},
+				"required": [
+					"version",
+					"revision",
+					"groups",
+					"items",
+					"sources",
+					"rules"
+				],
+				"additionalProperties": false
 			},
 			"ProxyRouting": {
 				"type": [
@@ -5319,6 +5669,259 @@
 					"name"
 				]
 			},
+			"ClientRouting": {
+				"type": "object",
+				"properties": {
+					"version": {
+						"type": "number",
+						"enum": [
+							1
+						]
+					},
+					"revision": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 64
+					},
+					"groups": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 64,
+									"pattern": "^[^,=\\r\\n[\\]#\"']+$"
+								},
+								"type": {
+									"type": "string",
+									"enum": [
+										"select",
+										"url-test",
+										"fallback"
+									]
+								},
+								"candidates": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+									},
+									"maxItems": 200
+								},
+								"interval": {
+									"type": "integer",
+									"minimum": 60,
+									"maximum": 86400
+								},
+								"url": {
+									"type": "string",
+									"maxLength": 2048,
+									"format": "uri"
+								}
+							},
+							"required": [
+								"id",
+								"name",
+								"type",
+								"candidates",
+								"interval",
+								"url"
+							]
+						},
+						"maxItems": 200
+					},
+					"items": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 64,
+									"pattern": "^[^,=\\r\\n[\\]#\"']+$"
+								},
+								"enabled": {
+									"type": "boolean"
+								},
+								"target": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								}
+							},
+							"required": [
+								"id",
+								"name",
+								"enabled",
+								"target"
+							],
+							"additionalProperties": false
+						},
+						"maxItems": 500
+					},
+					"sources": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 64,
+									"pattern": "^[^,=\\r\\n[\\]#\"']+$"
+								},
+								"url": {
+									"type": [
+										"string",
+										"null"
+									],
+									"maxLength": 2048,
+									"format": "uri"
+								}
+							},
+							"required": [
+								"id",
+								"name",
+								"url"
+							],
+							"additionalProperties": false
+						},
+						"maxItems": 2200
+					},
+					"rules": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"itemId": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"sourceId": {
+									"type": "string",
+									"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+								},
+								"line": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 4352
+								}
+							},
+							"required": [
+								"id",
+								"itemId"
+							],
+							"additionalProperties": false
+						},
+						"maxItems": 2000
+					}
+				},
+				"required": [
+					"version",
+					"revision",
+					"groups",
+					"items",
+					"sources",
+					"rules"
+				],
+				"additionalProperties": false
+			},
+			"ClientRulesetFile": {
+				"type": "object",
+				"properties": {
+					"revision": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"urls": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						}
+					},
+					"count": {
+						"type": "integer"
+					},
+					"localAdded": {
+						"type": "integer"
+					},
+					"localRemoved": {
+						"type": "integer"
+					},
+					"checkedAt": {
+						"type": [
+							"string",
+							"null"
+						],
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": [
+							"string",
+							"null"
+						],
+						"format": "date-time"
+					},
+					"formats": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"format": {
+									"type": "string",
+									"enum": [
+										"platform",
+										"mihomo",
+										"sing-box",
+										"surge",
+										"loon",
+										"quanx",
+										"shadowrocket"
+									]
+								},
+								"unsupported": {
+									"type": "integer"
+								}
+							},
+							"required": [
+								"format",
+								"unsupported"
+							]
+						}
+					}
+				},
+				"required": [
+					"revision",
+					"content",
+					"urls",
+					"count",
+					"localAdded",
+					"localRemoved",
+					"checkedAt",
+					"updatedAt",
+					"formats"
+				]
+			},
 			"ProxySubscriptionTemplate": {
 				"type": "object",
 				"properties": {
@@ -5517,6 +6120,24 @@
 							"null"
 						]
 					},
+					"warnings": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"code": {
+									"type": "string"
+								},
+								"detail": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"code",
+								"detail"
+							]
+						}
+					},
 					"fellBack": {
 						"type": "boolean"
 					},
@@ -5588,6 +6209,7 @@
 					"headers",
 					"cached",
 					"formatError",
+					"warnings",
 					"fellBack",
 					"nodes",
 					"trace"
@@ -19734,6 +20356,528 @@
 										"items",
 										"total"
 									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/subscriptions/routing": {
+			"get": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "Client routing items, strategy groups and sources",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClientRouting"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "Save client routing without changing node access rules",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ClientRouting"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClientRouting"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/subscriptions/routing/sources/{id}": {
+			"get": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "Read the latest editable ruleset file",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClientRulesetFile"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "Replace the latest ruleset file and retain local edits",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"revision": {
+										"type": "string"
+									},
+									"content": {
+										"type": "string",
+										"maxLength": 786432
+									},
+									"metadata": {
+										"type": "object",
+										"properties": {
+											"configRevision": {
+												"type": "string"
+											},
+											"name": {
+												"type": "string",
+												"minLength": 1,
+												"maxLength": 64,
+												"pattern": "^[^,=\\r\\n[\\]#\"']+$"
+											},
+											"url": {
+												"type": [
+													"string",
+													"null"
+												],
+												"maxLength": 2048,
+												"format": "uri"
+											}
+										},
+										"required": [
+											"configRevision",
+											"name",
+											"url"
+										]
+									}
+								},
+								"required": [
+									"revision",
+									"content"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClientRulesetFile"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/subscriptions/routing/sources/{id}/check": {
+			"post": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "Download upstream rules and preview a merge without saving",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"revision": {
+											"type": "string"
+										},
+										"configRevision": {
+											"type": "string"
+										},
+										"upstream": {
+											"type": "string"
+										},
+										"merged": {
+											"type": "string"
+										},
+										"added": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"removed": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										}
+									},
+									"required": [
+										"revision",
+										"configRevision",
+										"upstream",
+										"merged",
+										"added",
+										"removed"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/proxy/subscriptions/routing/sources/{id}/merge": {
+			"post": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "Apply a reviewed upstream update to the latest file",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"revision": {
+										"type": "string"
+									},
+									"configRevision": {
+										"type": "string"
+									},
+									"upstream": {
+										"type": "string",
+										"maxLength": 786432
+									},
+									"keepLocal": {
+										"type": "boolean",
+										"default": true
+									}
+								},
+								"required": [
+									"revision",
+									"configRevision",
+									"upstream"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ClientRulesetFile"
 								}
 							}
 						}

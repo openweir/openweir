@@ -2389,6 +2389,97 @@
 				}
 			}
 		},
+		"/api/v1/app/proxy/subscriptions/rulesets/{id}/{format}": {
+			"get": {
+				"tags": [
+					"proxy-subscriptions"
+				],
+				"summary": "Download a public ruleset hosted by this site",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"platform",
+								"mihomo",
+								"sing-box",
+								"surge",
+								"loon",
+								"quanx",
+								"shadowrocket"
+							]
+						},
+						"required": true,
+						"name": "format",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Rule file",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Not modified"
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/v1/app/proxy/subscriptions/{token}": {
 			"get": {
 				"tags": [
