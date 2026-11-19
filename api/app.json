@@ -2739,6 +2739,76 @@
 						"required": true,
 						"name": "id",
 						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 64
+						},
+						"required": false,
+						"name": "target",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 32
+						},
+						"required": false,
+						"name": "flag",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "include",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "exclude",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "rename",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"none",
+								"name",
+								"ratio"
+							]
+						},
+						"required": false,
+						"name": "sort",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"0",
+								"1"
+							]
+						},
+						"required": false,
+						"name": "emoji",
+						"in": "query"
 					}
 				],
 				"responses": {
