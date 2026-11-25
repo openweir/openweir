@@ -7784,40 +7784,6 @@
 							"type": "string"
 						}
 					},
-					"legacyTagWarnings": {
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"kind": {
-									"type": "string",
-									"enum": [
-										"access",
-										"distribution",
-										"template"
-									]
-								},
-								"id": {
-									"type": "string"
-								},
-								"name": {
-									"type": "string"
-								},
-								"tags": {
-									"type": "array",
-									"items": {
-										"type": "string"
-									}
-								}
-							},
-							"required": [
-								"kind",
-								"id",
-								"name",
-								"tags"
-							]
-						}
-					},
 					"variables": {
 						"type": "array",
 						"items": {
@@ -7855,7 +7821,6 @@
 					"template",
 					"defaultTemplate",
 					"labelNames",
-					"legacyTagWarnings",
 					"variables"
 				]
 			},
@@ -8232,9 +8197,6 @@
 					"canDelete": {
 						"type": "boolean"
 					},
-					"usesLegacyRules": {
-						"type": "boolean"
-					},
 					"createdAt": {
 						"type": "string",
 						"format": "date-time"
@@ -8256,7 +8218,6 @@
 					"id",
 					"isDefault",
 					"canDelete",
-					"usesLegacyRules",
 					"createdAt",
 					"updatedAt"
 				]
@@ -9955,10 +9916,6 @@
 												"type": "string"
 											}
 										},
-										"legacyOrganizationCount": {
-											"type": "integer",
-											"minimum": 0
-										},
 										"permissions": {
 											"anyOf": [
 												{
@@ -9982,7 +9939,6 @@
 									"required": [
 										"user",
 										"roles",
-										"legacyOrganizationCount",
 										"permissions"
 									]
 								}
@@ -20980,91 +20936,6 @@
 										"name",
 										"addressPriority"
 									]
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Invalid request",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Not signed in",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"403": {
-						"description": "Permission denied",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"404": {
-						"description": "Not found",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/admin/proxy/domains/providers/{id}/zones": {
-			"get": {
-				"tags": [
-					"DNS"
-				],
-				"summary": "List accessible DNS zones",
-				"parameters": [
-					{
-						"schema": {
-							"type": "string"
-						},
-						"required": true,
-						"name": "id",
-						"in": "path"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "array",
-									"items": {
-										"type": "object",
-										"properties": {
-											"id": {
-												"type": "string"
-											},
-											"name": {
-												"type": "string"
-											}
-										},
-										"required": [
-											"id",
-											"name"
-										]
-									}
 								}
 							}
 						}
