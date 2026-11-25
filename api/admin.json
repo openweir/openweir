@@ -1118,6 +1118,10 @@
 						"type": "string",
 						"format": "uuid"
 					},
+					"number": {
+						"type": "integer",
+						"exclusiveMinimum": 0
+					},
 					"source": {
 						"$ref": "#/components/schemas/TicketSource"
 					},
@@ -1141,6 +1145,7 @@
 				},
 				"required": [
 					"id",
+					"number",
 					"source",
 					"subject",
 					"status",
@@ -1230,6 +1235,12 @@
 							"staff"
 						]
 					},
+					"senderTag": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
 					"source": {
 						"type": "string",
 						"enum": [
@@ -1254,6 +1265,7 @@
 				"required": [
 					"id",
 					"role",
+					"senderTag",
 					"source",
 					"body",
 					"attachments",
@@ -1620,6 +1632,7 @@
 							"DELETE /proxy/servers/{id}",
 							"DELETE /proxy/subscriptions/templates/{id}",
 							"DELETE /site/{image}",
+							"DELETE /tickets/{id}",
 							"DELETE /users/{id}",
 							"DELETE /users/{id}/accounts/{accountId}",
 							"DELETE /users/{id}/avatar",
@@ -15926,6 +15939,87 @@
 						}
 					}
 				}
+			},
+			"delete": {
+				"tags": [
+					"tickets"
+				],
+				"operationId": "deleteTicket",
+				"summary": "Delete a support ticket and its conversation",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											]
+										}
+									},
+									"required": [
+										"ok"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/v1/admin/tickets/{id}/messages": {
@@ -19347,6 +19441,106 @@
 				}
 			}
 		},
+		"/api/v1/admin/telegram/chats": {
+			"get": {
+				"tags": [
+					"telegram"
+				],
+				"summary": "List groups and channels known to the configured bot",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"botId": {
+											"type": "string"
+										},
+										"chats": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string"
+													},
+													"title": {
+														"type": "string"
+													},
+													"type": {
+														"type": "string",
+														"enum": [
+															"group",
+															"supergroup",
+															"channel"
+														]
+													},
+													"forum": {
+														"type": "boolean"
+													}
+												},
+												"required": [
+													"id",
+													"title",
+													"type",
+													"forum"
+												]
+											}
+										}
+									},
+									"required": [
+										"botId",
+										"chats"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/v1/admin/telegram/check": {
 			"post": {
 				"tags": [
@@ -19429,6 +19623,9 @@
 														]
 													},
 													"message": {
+														"type": "string"
+													},
+													"resolvedChatId": {
 														"type": "string"
 													}
 												},

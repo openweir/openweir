@@ -443,6 +443,10 @@
 						"type": "string",
 						"format": "uuid"
 					},
+					"number": {
+						"type": "integer",
+						"exclusiveMinimum": 0
+					},
 					"source": {
 						"$ref": "#/components/schemas/TicketSource"
 					},
@@ -466,6 +470,7 @@
 				},
 				"required": [
 					"id",
+					"number",
 					"source",
 					"subject",
 					"status",
@@ -509,6 +514,12 @@
 							"staff"
 						]
 					},
+					"senderTag": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
 					"source": {
 						"type": "string",
 						"enum": [
@@ -533,6 +544,7 @@
 				"required": [
 					"id",
 					"role",
+					"senderTag",
 					"source",
 					"body",
 					"attachments",
@@ -3818,6 +3830,12 @@
 													},
 													"type": {
 														"type": "string"
+													},
+													"title": {
+														"type": "string"
+													},
+													"is_forum": {
+														"type": "boolean"
 													}
 												},
 												"required": [
@@ -3846,6 +3864,12 @@
 												]
 											},
 											"sender_chat": {},
+											"sender_tag": {
+												"type": "string"
+											},
+											"author_signature": {
+												"type": "string"
+											},
 											"reply_to_message": {
 												"type": "object",
 												"properties": {
@@ -3907,10 +3931,109 @@
 														"file_id"
 													]
 												}
+											},
+											"date": {
+												"type": "integer",
+												"minimum": 0
 											}
 										},
 										"required": [
 											"chat"
+										]
+									},
+									"channel_post": {
+										"type": "object",
+										"properties": {
+											"chat": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "integer"
+													},
+													"type": {
+														"type": "string"
+													},
+													"title": {
+														"type": "string"
+													},
+													"is_forum": {
+														"type": "boolean"
+													}
+												},
+												"required": [
+													"id",
+													"type"
+												]
+											},
+											"date": {
+												"type": "integer",
+												"minimum": 0
+											}
+										},
+										"required": [
+											"chat",
+											"date"
+										]
+									},
+									"my_chat_member": {
+										"type": "object",
+										"properties": {
+											"chat": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "integer"
+													},
+													"type": {
+														"type": "string"
+													},
+													"title": {
+														"type": "string"
+													},
+													"is_forum": {
+														"type": "boolean"
+													}
+												},
+												"required": [
+													"id",
+													"type"
+												]
+											},
+											"date": {
+												"type": "integer",
+												"minimum": 0
+											},
+											"new_chat_member": {
+												"type": "object",
+												"properties": {
+													"user": {
+														"type": "object",
+														"properties": {
+															"id": {
+																"type": "integer"
+															}
+														},
+														"required": [
+															"id"
+														]
+													},
+													"status": {
+														"type": "string"
+													},
+													"is_member": {
+														"type": "boolean"
+													}
+												},
+												"required": [
+													"user",
+													"status"
+												]
+											}
+										},
+										"required": [
+											"chat",
+											"date",
+											"new_chat_member"
 										]
 									}
 								},
