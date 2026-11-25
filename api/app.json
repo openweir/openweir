@@ -392,6 +392,19 @@
 					"title": {
 						"type": "string"
 					},
+					"policyType": {
+						"type": [
+							"string",
+							"null"
+						],
+						"enum": [
+							"terms",
+							"acceptableUse",
+							"serviceAgreement",
+							"privacy",
+							null
+						]
+					},
 					"body": {
 						"type": "string"
 					},
@@ -416,6 +429,7 @@
 					"id",
 					"kind",
 					"title",
+					"policyType",
 					"body",
 					"category",
 					"position",
@@ -2374,6 +2388,20 @@
 						},
 						"required": true,
 						"name": "kind",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"terms",
+								"acceptableUse",
+								"serviceAgreement",
+								"privacy"
+							]
+						},
+						"required": false,
+						"name": "policyType",
 						"in": "query"
 					},
 					{
