@@ -300,7 +300,199 @@
 					"sign_in",
 					"password_reset",
 					"send_code",
-					"magic_link"
+					"magic_link",
+					"ticket_submit",
+					"code_redeem"
+				]
+			},
+			"PublishedContent": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"kind": {
+						"type": "string",
+						"enum": [
+							"announcement",
+							"doc"
+						]
+					},
+					"title": {
+						"type": "string"
+					},
+					"body": {
+						"type": "string"
+					},
+					"category": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"position": {
+						"type": "integer"
+					},
+					"pinned": {
+						"type": "boolean"
+					},
+					"publishAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"kind",
+					"title",
+					"body",
+					"category",
+					"position",
+					"pinned",
+					"publishAt"
+				]
+			},
+			"TicketSource": {
+				"type": "string",
+				"enum": [
+					"user",
+					"guest"
+				]
+			},
+			"TicketStatus": {
+				"type": "string",
+				"enum": [
+					"unverified",
+					"pending",
+					"in_progress",
+					"closed"
+				]
+			},
+			"Ticket": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"source": {
+						"$ref": "#/components/schemas/TicketSource"
+					},
+					"subject": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/TicketStatus"
+					},
+					"needsReply": {
+						"type": "boolean"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"source",
+					"subject",
+					"status",
+					"needsReply",
+					"createdAt",
+					"updatedAt"
+				]
+			},
+			"TicketDetail": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Ticket"
+					},
+					{
+						"type": "object",
+						"properties": {
+							"messages": {
+								"type": "array",
+								"items": {
+									"$ref": "#/components/schemas/TicketMessage"
+								}
+							}
+						},
+						"required": [
+							"messages"
+						]
+					}
+				]
+			},
+			"TicketMessage": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"role": {
+						"type": "string",
+						"enum": [
+							"requester",
+							"staff"
+						]
+					},
+					"source": {
+						"type": "string",
+						"enum": [
+							"web",
+							"telegram"
+						]
+					},
+					"body": {
+						"type": "string"
+					},
+					"attachments": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/TicketAttachment"
+						}
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"role",
+					"source",
+					"body",
+					"attachments",
+					"createdAt"
+				]
+			},
+			"TicketAttachment": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"name": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					},
+					"size": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"type",
+					"size"
 				]
 			},
 			"ProxyMyNodes": {
@@ -478,6 +670,58 @@
 					"amount"
 				]
 			},
+			"MyBillingSubscription": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/BillingSubscription"
+					},
+					{
+						"type": "object",
+						"properties": {
+							"renewalPrices": {
+								"type": "array",
+								"items": {
+									"$ref": "#/components/schemas/BillingPlanPrice"
+								}
+							},
+							"subscriptionAccess": {
+								"type": "string",
+								"enum": [
+									"link",
+									"both",
+									"app"
+								],
+								"description": "Use the token URL for link, the signed-in config endpoint for app, or either endpoint for both"
+							}
+						},
+						"required": [
+							"subscriptionAccess"
+						]
+					}
+				]
+			},
+			"UserRef": {
+				"type": [
+					"object",
+					"null"
+				],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"email"
+				]
+			},
 			"BillingSubscription": {
 				"type": "object",
 				"properties": {
@@ -622,28 +866,6 @@
 					"urls",
 					"createdAt",
 					"updatedAt"
-				]
-			},
-			"UserRef": {
-				"type": [
-					"object",
-					"null"
-				],
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					},
-					"email": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"id",
-					"name",
-					"email"
 				]
 			},
 			"BillingSubscriptionAccesses": {
@@ -899,6 +1121,7 @@
 							"adjust",
 							"reward",
 							"reclaim",
+							"redeem",
 							"commission",
 							"transfer",
 							"withdraw"
@@ -978,6 +1201,15 @@
 					"discount": {
 						"type": "integer"
 					},
+					"codeId": {
+						"type": [
+							"string",
+							"null"
+						]
+					},
+					"codeDiscount": {
+						"type": "integer"
+					},
 					"credit": {
 						"type": "integer"
 					},
@@ -1002,6 +1234,8 @@
 					"subscriptionId",
 					"price",
 					"discount",
+					"codeId",
+					"codeDiscount",
 					"credit",
 					"pointsUsed",
 					"pointsAmount",
@@ -1023,7 +1257,8 @@
 						]
 					},
 					"planId": {
-						"type": "string"
+						"type": "string",
+						"description": "Renewals default to the subscription's current plan and only accept that plan"
 					},
 					"period": {
 						"type": "string",
@@ -1051,6 +1286,10 @@
 					"useBalance": {
 						"type": "boolean",
 						"default": true
+					},
+					"code": {
+						"type": "string",
+						"pattern": "^[a-zA-Z0-9_-]{1,64}$"
 					}
 				},
 				"required": [
@@ -1999,7 +2238,7 @@
 					"captcha"
 				],
 				"summary": "Captcha the frontend should show (public)",
-				"description": "Send the token in the `x-captcha-response` header on the Better Auth endpoints of each listed scene. OTP password-reset requests require a token when either password_reset or send_code is enabled, including /email-otp/send-verification-otp with type forget-password. Other OTP requests follow send_code. Missing tokens get 400 MISSING_RESPONSE, rejected ones 403 VERIFICATION_FAILED, and 500 UNKNOWN_ERROR when the provider can't be reached",
+				"description": "Send the token in the `x-captcha-response` header on the endpoint for each listed scene. The ticket_submit scene applies to guest ticket submissions and returns 400 CAPTCHA_FAILED on rejection. OTP password-reset requests require a token when either password_reset or send_code is enabled, including /email-otp/send-verification-otp with type forget-password. Other OTP requests follow send_code. Missing tokens get 400 MISSING_RESPONSE, rejected ones 403 VERIFICATION_FAILED, and 500 UNKNOWN_ERROR when the provider can't be reached",
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -2007,6 +2246,1504 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/CaptchaConfig"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/content": {
+			"get": {
+				"tags": [
+					"content"
+				],
+				"summary": "List published content visible to the viewer",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						},
+						"required": false,
+						"name": "page",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20
+						},
+						"required": false,
+						"name": "pageSize",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"enum": [
+								"announcement",
+								"doc"
+							]
+						},
+						"required": true,
+						"name": "kind",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"maxLength": 200
+						},
+						"required": false,
+						"name": "q",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 100
+						},
+						"required": false,
+						"name": "category",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"$ref": "#/components/schemas/PublishedContent"
+											}
+										},
+										"total": {
+											"type": "integer"
+										}
+									},
+									"required": [
+										"items",
+										"total"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/content/{id}": {
+			"get": {
+				"tags": [
+					"content"
+				],
+				"summary": "Read published content visible to the viewer",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"minLength": 1
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PublishedContent"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets": {
+			"get": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "List your support tickets",
+				"parameters": [
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						},
+						"required": false,
+						"name": "page",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20
+						},
+						"required": false,
+						"name": "pageSize",
+						"in": "query"
+					},
+					{
+						"schema": {
+							"$ref": "#/components/schemas/TicketStatus"
+						},
+						"required": false,
+						"name": "status",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"allOf": [
+													{
+														"$ref": "#/components/schemas/Ticket"
+													},
+													{
+														"type": "object",
+														"properties": {
+															"latestStaffReplyId": {
+																"type": [
+																	"string",
+																	"null"
+																],
+																"format": "uuid"
+															}
+														},
+														"required": [
+															"latestStaffReplyId"
+														]
+													}
+												]
+											}
+										},
+										"total": {
+											"type": "integer"
+										}
+									},
+									"required": [
+										"items",
+										"total"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Submit a support ticket",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"body": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 10000
+									},
+									"subject": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 200
+									}
+								},
+								"required": [
+									"body",
+									"subject"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string",
+											"format": "uuid"
+										}
+									},
+									"required": [
+										"id"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/{id}": {
+			"get": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Read your support ticket",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TicketDetail"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/{id}/messages": {
+			"post": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Follow up on your support ticket",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"body": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 10000
+									}
+								},
+								"required": [
+									"body"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											]
+										}
+									},
+									"required": [
+										"ok"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/{id}/close": {
+			"post": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Close your support ticket",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Ticket"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/{id}/attachments": {
+			"post": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Add a private attachment to your support ticket",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 200
+						},
+						"required": true,
+						"name": "filename",
+						"in": "query"
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"description": "Raw image or document up to 10 MiB",
+					"content": {
+						"image/jpeg": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/png": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/gif": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/webp": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"application/pdf": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"application/msword": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"application/vnd.ms-excel": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"application/vnd.ms-powerpoint": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"application/vnd.openxmlformats-officedocument.presentationml.presentation": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TicketAttachment"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"413": {
+						"description": "Attachment too large",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/{id}/messages/{messageId}/attachments/{attachmentId}": {
+			"get": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Download an attachment from your support ticket",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "messageId",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "attachmentId",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Private attachment",
+						"content": {
+							"application/octet-stream": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							}
+						}
+					},
+					"304": {
+						"description": "Not modified"
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/guest": {
+			"post": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Submit a guest ticket and send an email verification link",
+				"description": "Send the captcha token in x-captcha-response when ticket_submit is active",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"body": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 10000
+									},
+									"subject": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 200
+									},
+									"email": {
+										"type": "string",
+										"maxLength": 254
+									}
+								},
+								"required": [
+									"body",
+									"subject",
+									"email"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											]
+										}
+									},
+									"required": [
+										"ok"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Too many submissions",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "Guest support unavailable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/guest/{token}": {
+			"get": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Verify and open a guest ticket",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[a-f0-9]{64}$"
+						},
+						"required": true,
+						"name": "token",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Guest ticket",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TicketDetail"
+								}
+							},
+							"text/html": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/guest/{token}/messages": {
+			"post": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Follow up on a verified guest ticket",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[a-f0-9]{64}$"
+						},
+						"required": true,
+						"name": "token",
+						"in": "path"
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"body": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 10000
+									}
+								},
+								"required": [
+									"body"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											]
+										}
+									},
+									"required": [
+										"ok"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/tickets/guest/{token}/reply": {
+			"post": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Submit the guest ticket reply form",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[a-f0-9]{64}$"
+						},
+						"required": true,
+						"name": "token",
+						"in": "path"
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/x-www-form-urlencoded": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"body": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 10000
+									}
+								},
+								"required": [
+									"body"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"303": {
+						"description": "Return to the guest ticket"
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/telegram/webhook": {
+			"post": {
+				"tags": [
+					"telegram"
+				],
+				"summary": "Receive Telegram webhook updates",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"update_id": {
+										"type": "integer",
+										"minimum": 0
+									},
+									"message": {
+										"type": "object",
+										"properties": {
+											"chat": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "integer"
+													},
+													"type": {
+														"type": "string"
+													}
+												},
+												"required": [
+													"id",
+													"type"
+												]
+											},
+											"message_id": {
+												"type": "integer"
+											},
+											"message_thread_id": {
+												"type": "integer"
+											},
+											"from": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "integer"
+													},
+													"is_bot": {
+														"type": "boolean"
+													}
+												},
+												"required": [
+													"id"
+												]
+											},
+											"sender_chat": {},
+											"reply_to_message": {
+												"type": "object",
+												"properties": {
+													"message_id": {
+														"type": "integer"
+													}
+												},
+												"required": [
+													"message_id"
+												]
+											},
+											"text": {
+												"type": "string"
+											},
+											"caption": {
+												"type": "string"
+											},
+											"document": {
+												"type": "object",
+												"properties": {
+													"file_id": {
+														"type": "string"
+													},
+													"file_name": {
+														"type": "string"
+													},
+													"mime_type": {
+														"type": "string"
+													},
+													"file_size": {
+														"type": "integer",
+														"minimum": 0
+													}
+												},
+												"required": [
+													"file_id"
+												]
+											},
+											"photo": {
+												"type": "array",
+												"items": {
+													"type": "object",
+													"properties": {
+														"file_id": {
+															"type": "string"
+														},
+														"file_name": {
+															"type": "string"
+														},
+														"mime_type": {
+															"type": "string"
+														},
+														"file_size": {
+															"type": "integer",
+															"minimum": 0
+														}
+													},
+													"required": [
+														"file_id"
+													]
+												}
+											}
+										},
+										"required": [
+											"chat"
+										]
+									}
+								},
+								"required": [
+									"update_id"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"ok": {
+											"type": "boolean",
+											"enum": [
+												true
+											]
+										}
+									},
+									"required": [
+										"ok"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
 								}
 							}
 						}
@@ -2905,7 +4642,7 @@
 				"tags": [
 					"billing-subscriptions"
 				],
-				"summary": "My subscriptions, with their links",
+				"summary": "My subscriptions with their configuration access modes and links",
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -2914,7 +4651,7 @@
 								"schema": {
 									"type": "array",
 									"items": {
-										"$ref": "#/components/schemas/BillingSubscription"
+										"$ref": "#/components/schemas/MyBillingSubscription"
 									}
 								}
 							}
@@ -2968,7 +4705,7 @@
 				"tags": [
 					"billing-subscriptions"
 				],
-				"summary": "One of my subscriptions, with its link",
+				"summary": "One of my subscriptions with its configuration access mode and link",
 				"parameters": [
 					{
 						"schema": {
@@ -2986,7 +4723,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/BillingSubscription"
+									"$ref": "#/components/schemas/MyBillingSubscription"
 								}
 							}
 						}
@@ -3954,6 +5691,199 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/BillingOrder"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/app/billing/codes/redeem": {
+			"post": {
+				"tags": [
+					"billing-codes"
+				],
+				"summary": "Redeem a billing code",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"code": {
+										"type": "string",
+										"pattern": "^[a-zA-Z0-9_-]{1,64}$"
+									},
+									"requestId": {
+										"type": "string",
+										"format": "uuid",
+										"description": "Generate once per redemption and reuse on retry"
+									},
+									"subscriptionId": {
+										"type": "integer",
+										"exclusiveMinimum": 0
+									}
+								},
+								"required": [
+									"code",
+									"requestId"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string"
+										},
+										"subscriptionId": {
+											"type": [
+												"integer",
+												"null"
+											]
+										},
+										"reward": {
+											"oneOf": [
+												{
+													"type": "object",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"balance"
+															]
+														},
+														"value": {
+															"type": "integer",
+															"minimum": 1,
+															"maximum": 1000000000000
+														}
+													},
+													"required": [
+														"type",
+														"value"
+													]
+												},
+												{
+													"type": "object",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"points"
+															]
+														},
+														"value": {
+															"type": "integer",
+															"minimum": 1,
+															"maximum": 1000000000000
+														}
+													},
+													"required": [
+														"type",
+														"value"
+													]
+												},
+												{
+													"type": "object",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"traffic"
+															]
+														},
+														"value": {
+															"type": "integer",
+															"minimum": 1,
+															"maximum": 1000000000000
+														}
+													},
+													"required": [
+														"type",
+														"value"
+													]
+												},
+												{
+													"type": "object",
+													"properties": {
+														"type": {
+															"type": "string",
+															"enum": [
+																"subscription"
+															]
+														},
+														"value": {
+															"type": "integer",
+															"minimum": 1,
+															"maximum": 36500
+														},
+														"planId": {
+															"type": "string",
+															"minLength": 1
+														}
+													},
+													"required": [
+														"type",
+														"value",
+														"planId"
+													]
+												}
+											]
+										}
+									},
+									"required": [
+										"id",
+										"subscriptionId",
+										"reward"
+									]
 								}
 							}
 						}
