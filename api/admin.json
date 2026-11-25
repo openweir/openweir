@@ -2256,6 +2256,7 @@
 													"geoip",
 													"geosite",
 													"process_name",
+													"dst_port",
 													"comment"
 												]
 											},
@@ -5032,6 +5033,7 @@
 																	"geoip",
 																	"geosite",
 																	"process_name",
+																	"dst_port",
 																	"comment"
 																]
 															},
@@ -5075,6 +5077,7 @@
 																			"geoip",
 																			"geosite",
 																			"process_name",
+																			"dst_port",
 																			"comment"
 																		]
 																	},
@@ -5115,6 +5118,7 @@
 																			"geoip",
 																			"geosite",
 																			"process_name",
+																			"dst_port",
 																			"comment"
 																		]
 																	},
@@ -5194,6 +5198,7 @@
 																	"geoip",
 																	"geosite",
 																	"process_name",
+																	"dst_port",
 																	"comment"
 																]
 															},
