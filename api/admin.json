@@ -1711,6 +1711,7 @@
 							"POST /proxy/subscriptions/templates/{id}/default",
 							"POST /telegram/check",
 							"POST /tickets/{id}/assign",
+							"POST /tickets/{id}/attachments",
 							"POST /tickets/{id}/close",
 							"POST /tickets/{id}/messages",
 							"POST /users",
@@ -10160,6 +10161,76 @@
 								"schema": {
 									"type": "object",
 									"properties": {
+										"footer": {
+											"type": "object",
+											"properties": {
+												"enabled": {
+													"type": "boolean",
+													"default": true
+												},
+												"text": {
+													"type": "object",
+													"properties": {
+														"en-US": {
+															"type": "string",
+															"maxLength": 300
+														},
+														"zh-CN": {
+															"type": "string",
+															"maxLength": 300
+														}
+													},
+													"default": {}
+												},
+												"policies": {
+													"type": "object",
+													"properties": {
+														"terms": {
+															"type": "string",
+															"format": "uuid"
+														},
+														"acceptableUse": {
+															"type": "string",
+															"format": "uuid"
+														},
+														"serviceAgreement": {
+															"type": "string",
+															"format": "uuid"
+														},
+														"privacy": {
+															"type": "string",
+															"format": "uuid"
+														}
+													},
+													"default": {}
+												},
+												"socialLinks": {
+													"type": "array",
+													"items": {
+														"type": "object",
+														"properties": {
+															"label": {
+																"type": "string",
+																"minLength": 1,
+																"maxLength": 80
+															},
+															"url": {
+																"type": "string",
+																"maxLength": 2048,
+																"format": "uri"
+															}
+														},
+														"required": [
+															"label",
+															"url"
+														]
+													},
+													"maxItems": 32,
+													"default": []
+												}
+											},
+											"default": {}
+										},
 										"site": {
 											"type": "object",
 											"properties": {
@@ -10495,6 +10566,75 @@
 							"schema": {
 								"type": "object",
 								"properties": {
+									"footer": {
+										"type": "object",
+										"properties": {
+											"enabled": {
+												"type": "boolean",
+												"default": true
+											},
+											"text": {
+												"type": "object",
+												"properties": {
+													"en-US": {
+														"type": "string",
+														"maxLength": 300
+													},
+													"zh-CN": {
+														"type": "string",
+														"maxLength": 300
+													}
+												},
+												"default": {}
+											},
+											"policies": {
+												"type": "object",
+												"properties": {
+													"terms": {
+														"type": "string",
+														"format": "uuid"
+													},
+													"acceptableUse": {
+														"type": "string",
+														"format": "uuid"
+													},
+													"serviceAgreement": {
+														"type": "string",
+														"format": "uuid"
+													},
+													"privacy": {
+														"type": "string",
+														"format": "uuid"
+													}
+												},
+												"default": {}
+											},
+											"socialLinks": {
+												"type": "array",
+												"items": {
+													"type": "object",
+													"properties": {
+														"label": {
+															"type": "string",
+															"minLength": 1,
+															"maxLength": 80
+														},
+														"url": {
+															"type": "string",
+															"maxLength": 2048,
+															"format": "uri"
+														}
+													},
+													"required": [
+														"label",
+														"url"
+													]
+												},
+												"maxItems": 32,
+												"default": []
+											}
+										}
+									},
 									"site": {
 										"type": "object",
 										"properties": {
@@ -10768,6 +10908,76 @@
 								"schema": {
 									"type": "object",
 									"properties": {
+										"footer": {
+											"type": "object",
+											"properties": {
+												"enabled": {
+													"type": "boolean",
+													"default": true
+												},
+												"text": {
+													"type": "object",
+													"properties": {
+														"en-US": {
+															"type": "string",
+															"maxLength": 300
+														},
+														"zh-CN": {
+															"type": "string",
+															"maxLength": 300
+														}
+													},
+													"default": {}
+												},
+												"policies": {
+													"type": "object",
+													"properties": {
+														"terms": {
+															"type": "string",
+															"format": "uuid"
+														},
+														"acceptableUse": {
+															"type": "string",
+															"format": "uuid"
+														},
+														"serviceAgreement": {
+															"type": "string",
+															"format": "uuid"
+														},
+														"privacy": {
+															"type": "string",
+															"format": "uuid"
+														}
+													},
+													"default": {}
+												},
+												"socialLinks": {
+													"type": "array",
+													"items": {
+														"type": "object",
+														"properties": {
+															"label": {
+																"type": "string",
+																"minLength": 1,
+																"maxLength": 80
+															},
+															"url": {
+																"type": "string",
+																"maxLength": 2048,
+																"format": "uri"
+															}
+														},
+														"required": [
+															"label",
+															"url"
+														]
+													},
+													"maxItems": 32,
+													"default": []
+												}
+											},
+											"default": {}
+										},
 										"site": {
 											"type": "object",
 											"properties": {
@@ -15947,6 +16157,127 @@
 					},
 					"404": {
 						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/tickets/{id}/attachments": {
+			"post": {
+				"tags": [
+					"tickets"
+				],
+				"summary": "Send an image to a ticket as staff",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"format": "uuid"
+						},
+						"required": true,
+						"name": "id",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 200
+						},
+						"required": true,
+						"name": "filename",
+						"in": "query"
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"description": "Raw JPEG, PNG, GIF or WebP image up to 10 MiB",
+					"content": {
+						"image/jpeg": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/png": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/gif": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/webp": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TicketAttachment"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"413": {
+						"description": "Image too large",
 						"content": {
 							"application/json": {
 								"schema": {
