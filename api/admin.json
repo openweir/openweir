@@ -1709,6 +1709,7 @@
 							"POST /proxy/subscriptions/routing/sources/{id}/copy",
 							"POST /proxy/subscriptions/templates",
 							"POST /proxy/subscriptions/templates/{id}/default",
+							"POST /telegram/check",
 							"POST /tickets/{id}/assign",
 							"POST /tickets/{id}/close",
 							"POST /tickets/{id}/messages",
@@ -18776,18 +18777,30 @@
 								"schema": {
 									"type": "object",
 									"properties": {
+										"notificationsEnabled": {
+											"type": "boolean"
+										},
+										"supportEnabled": {
+											"type": "boolean"
+										},
+										"broadcastEnabled": {
+											"type": "boolean"
+										},
+										"guestTicketsEnabled": {
+											"type": "boolean"
+										},
+										"configured": {
+											"type": "boolean"
+										},
 										"supportChatId": {
 											"type": "string",
 											"pattern": "^(?:-[1-9]\\d*|)$"
-										},
-										"topics": {
-											"type": "boolean"
 										},
 										"announcementChatId": {
 											"type": "string",
 											"pattern": "^(?:-[1-9]\\d*|)$"
 										},
-										"configured": {
+										"topics": {
 											"type": "boolean"
 										},
 										"webhookUrl": {
@@ -18796,10 +18809,14 @@
 										}
 									},
 									"required": [
-										"supportChatId",
-										"topics",
-										"announcementChatId",
+										"notificationsEnabled",
+										"supportEnabled",
+										"broadcastEnabled",
+										"guestTicketsEnabled",
 										"configured",
+										"supportChatId",
+										"announcementChatId",
+										"topics",
 										"webhookUrl"
 									]
 								}
@@ -18859,20 +18876,32 @@
 							"schema": {
 								"type": "object",
 								"properties": {
-									"supportChatId": {
-										"type": "string",
-										"pattern": "^(?:-[1-9]\\d*|)$"
+									"notificationsEnabled": {
+										"type": "boolean"
 									},
-									"topics": {
+									"supportEnabled": {
+										"type": "boolean"
+									},
+									"broadcastEnabled": {
+										"type": "boolean"
+									},
+									"guestTicketsEnabled": {
 										"type": "boolean"
 									},
 									"token": {
 										"type": "string",
 										"pattern": "^[1-9]\\d*:[\\w-]+$"
 									},
+									"supportChatId": {
+										"type": "string",
+										"pattern": "^(?:-[1-9]\\d*|)$"
+									},
 									"announcementChatId": {
 										"type": "string",
 										"pattern": "^(?:-[1-9]\\d*|)$"
+									},
+									"topics": {
+										"type": "boolean"
 									}
 								},
 								"required": [
@@ -18891,18 +18920,30 @@
 								"schema": {
 									"type": "object",
 									"properties": {
+										"notificationsEnabled": {
+											"type": "boolean"
+										},
+										"supportEnabled": {
+											"type": "boolean"
+										},
+										"broadcastEnabled": {
+											"type": "boolean"
+										},
+										"guestTicketsEnabled": {
+											"type": "boolean"
+										},
+										"configured": {
+											"type": "boolean"
+										},
 										"supportChatId": {
 											"type": "string",
 											"pattern": "^(?:-[1-9]\\d*|)$"
-										},
-										"topics": {
-											"type": "boolean"
 										},
 										"announcementChatId": {
 											"type": "string",
 											"pattern": "^(?:-[1-9]\\d*|)$"
 										},
-										"configured": {
+										"topics": {
 											"type": "boolean"
 										},
 										"webhookUrl": {
@@ -18911,11 +18952,158 @@
 										}
 									},
 									"required": [
-										"supportChatId",
-										"topics",
-										"announcementChatId",
+										"notificationsEnabled",
+										"supportEnabled",
+										"broadcastEnabled",
+										"guestTicketsEnabled",
 										"configured",
+										"supportChatId",
+										"announcementChatId",
+										"topics",
 										"webhookUrl"
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/telegram/check": {
+			"post": {
+				"tags": [
+					"telegram"
+				],
+				"summary": "Check draft Telegram settings without sending messages or saving",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"notificationsEnabled": {
+										"type": "boolean"
+									},
+									"supportEnabled": {
+										"type": "boolean"
+									},
+									"broadcastEnabled": {
+										"type": "boolean"
+									},
+									"guestTicketsEnabled": {
+										"type": "boolean"
+									},
+									"token": {
+										"type": "string",
+										"pattern": "^[1-9]\\d*:[\\w-]+$"
+									},
+									"supportChatId": {
+										"type": "string",
+										"pattern": "^(?:-[1-9]\\d*|)$"
+									},
+									"announcementChatId": {
+										"type": "string",
+										"pattern": "^(?:-[1-9]\\d*|)$"
+									},
+									"topics": {
+										"type": "boolean"
+									}
+								},
+								"required": [
+									"supportChatId",
+									"topics"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"checks": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"check": {
+														"type": "string",
+														"enum": [
+															"bot",
+															"support",
+															"webhook",
+															"email",
+															"broadcast"
+														]
+													},
+													"status": {
+														"type": "string",
+														"enum": [
+															"ok",
+															"error",
+															"pending",
+															"skipped"
+														]
+													},
+													"message": {
+														"type": "string"
+													}
+												},
+												"required": [
+													"check",
+													"status",
+													"message"
+												]
+											}
+										}
+									},
+									"required": [
+										"checks"
 									]
 								}
 							}
