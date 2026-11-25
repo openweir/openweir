@@ -3202,7 +3202,7 @@
 				"tags": [
 					"tickets"
 				],
-				"summary": "Submit a guest ticket and send an email verification link",
+				"summary": "Start a guest conversation with a contact email",
 				"description": "Send the captcha token in x-captcha-response when ticket_submit is active",
 				"requestBody": {
 					"required": true,
@@ -3248,10 +3248,15 @@
 											"enum": [
 												true
 											]
+										},
+										"token": {
+											"type": "string",
+											"pattern": "^[a-f0-9]{64}$"
 										}
 									},
 									"required": [
-										"ok"
+										"ok",
+										"token"
 									]
 								}
 							}
@@ -3299,16 +3304,6 @@
 					},
 					"429": {
 						"description": "Too many submissions",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"503": {
-						"description": "Guest support unavailable",
 						"content": {
 							"application/json": {
 								"schema": {

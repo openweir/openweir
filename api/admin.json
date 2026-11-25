@@ -1157,6 +1157,12 @@
 					{
 						"type": "object",
 						"properties": {
+							"sourceIp": {
+								"type": [
+									"string",
+									"null"
+								]
+							},
 							"messages": {
 								"type": "array",
 								"items": {
@@ -1180,6 +1186,7 @@
 							}
 						},
 						"required": [
+							"sourceIp",
 							"messages"
 						]
 					}
@@ -19125,11 +19132,11 @@
 										},
 										"supportChatId": {
 											"type": "string",
-											"pattern": "^(?:-[1-9]\\d*|)$"
+											"pattern": "^(?:-?[1-9]\\d*|)$"
 										},
 										"announcementChatId": {
 											"type": "string",
-											"pattern": "^(?:-[1-9]\\d*|)$"
+											"pattern": "^(?:-?[1-9]\\d*|)$"
 										},
 										"topics": {
 											"type": "boolean"
@@ -19225,11 +19232,11 @@
 									},
 									"supportChatId": {
 										"type": "string",
-										"pattern": "^(?:-[1-9]\\d*|)$"
+										"pattern": "^(?:-?[1-9]\\d*|)$"
 									},
 									"announcementChatId": {
 										"type": "string",
-										"pattern": "^(?:-[1-9]\\d*|)$"
+										"pattern": "^(?:-?[1-9]\\d*|)$"
 									},
 									"topics": {
 										"type": "boolean"
@@ -19268,11 +19275,11 @@
 										},
 										"supportChatId": {
 											"type": "string",
-											"pattern": "^(?:-[1-9]\\d*|)$"
+											"pattern": "^(?:-?[1-9]\\d*|)$"
 										},
 										"announcementChatId": {
 											"type": "string",
-											"pattern": "^(?:-[1-9]\\d*|)$"
+											"pattern": "^(?:-?[1-9]\\d*|)$"
 										},
 										"topics": {
 											"type": "boolean"
@@ -19371,11 +19378,11 @@
 									},
 									"supportChatId": {
 										"type": "string",
-										"pattern": "^(?:-[1-9]\\d*|)$"
+										"pattern": "^(?:-?[1-9]\\d*|)$"
 									},
 									"announcementChatId": {
 										"type": "string",
-										"pattern": "^(?:-[1-9]\\d*|)$"
+										"pattern": "^(?:-?[1-9]\\d*|)$"
 									},
 									"topics": {
 										"type": "boolean"
@@ -19408,7 +19415,7 @@
 															"bot",
 															"support",
 															"webhook",
-															"email",
+															"guest",
 															"broadcast"
 														]
 													},
