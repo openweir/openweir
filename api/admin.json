@@ -509,12 +509,10 @@
 						"properties": {
 							"en-US": {
 								"type": "string",
-								"minLength": 1,
 								"maxLength": 60000
 							},
 							"zh-CN": {
 								"type": "string",
-								"minLength": 1,
 								"maxLength": 60000
 							}
 						},
@@ -526,22 +524,11 @@
 					"visibility": {
 						"type": "string",
 						"enum": [
+							"hidden",
 							"public",
-							"signed_in",
-							"plan",
-							"level"
+							"signed_in"
 						],
-						"default": "public"
-					},
-					"audienceIds": {
-						"type": "array",
-						"items": {
-							"type": "string",
-							"minLength": 1,
-							"maxLength": 100
-						},
-						"maxItems": 100,
-						"default": []
+						"default": "hidden"
 					},
 					"pinned": {
 						"type": "boolean",
@@ -559,6 +546,19 @@
 					"id": {
 						"type": "string"
 					},
+					"policyType": {
+						"type": [
+							"string",
+							"null"
+						],
+						"enum": [
+							"terms",
+							"acceptableUse",
+							"serviceAgreement",
+							"privacy",
+							null
+						]
+					},
 					"kind": {
 						"type": "string",
 						"enum": [
@@ -568,39 +568,15 @@
 					},
 					"position": {
 						"type": "integer"
-					},
-					"publishAt": {
-						"type": [
-							"string",
-							"null"
-						],
-						"format": "date-time"
-					},
-					"sendEmail": {
-						"type": "boolean"
-					},
-					"sendTelegram": {
-						"type": "boolean"
-					},
-					"status": {
-						"type": "string",
-						"enum": [
-							"draft",
-							"scheduled",
-							"published"
-						]
 					}
 				},
 				"required": [
 					"titles",
 					"bodies",
 					"id",
+					"policyType",
 					"kind",
-					"position",
-					"publishAt",
-					"sendEmail",
-					"sendTelegram",
-					"status"
+					"position"
 				]
 			},
 			"AdminUserListItem": {
@@ -1683,8 +1659,6 @@
 							"POST /billing/wallet/{userId}/adjust",
 							"POST /captcha/providers",
 							"POST /content",
-							"POST /content/{id}/publish",
-							"POST /content/{id}/unpublish",
 							"POST /files",
 							"POST /jobs/abandon",
 							"POST /jobs/{id}/retry",
@@ -1729,6 +1703,7 @@
 							"POST /proxy/subscriptions/routing/sources/{id}/copy",
 							"POST /proxy/subscriptions/templates",
 							"POST /proxy/subscriptions/templates/{id}/default",
+							"POST /site/contact-logos",
 							"POST /telegram/check",
 							"POST /tickets/{id}/assign",
 							"POST /tickets/{id}/attachments",
@@ -10202,28 +10177,6 @@
 													},
 													"default": {}
 												},
-												"policies": {
-													"type": "object",
-													"properties": {
-														"terms": {
-															"type": "string",
-															"format": "uuid"
-														},
-														"acceptableUse": {
-															"type": "string",
-															"format": "uuid"
-														},
-														"serviceAgreement": {
-															"type": "string",
-															"format": "uuid"
-														},
-														"privacy": {
-															"type": "string",
-															"format": "uuid"
-														}
-													},
-													"default": {}
-												},
 												"socialLinks": {
 													"type": "array",
 													"items": {
@@ -10236,8 +10189,11 @@
 															},
 															"url": {
 																"type": "string",
-																"maxLength": 2048,
-																"format": "uri"
+																"maxLength": 2048
+															},
+															"logoFileId": {
+																"type": "string",
+																"format": "uuid"
 															}
 														},
 														"required": [
@@ -10607,28 +10563,6 @@
 												},
 												"default": {}
 											},
-											"policies": {
-												"type": "object",
-												"properties": {
-													"terms": {
-														"type": "string",
-														"format": "uuid"
-													},
-													"acceptableUse": {
-														"type": "string",
-														"format": "uuid"
-													},
-													"serviceAgreement": {
-														"type": "string",
-														"format": "uuid"
-													},
-													"privacy": {
-														"type": "string",
-														"format": "uuid"
-													}
-												},
-												"default": {}
-											},
 											"socialLinks": {
 												"type": "array",
 												"items": {
@@ -10641,8 +10575,11 @@
 														},
 														"url": {
 															"type": "string",
-															"maxLength": 2048,
-															"format": "uri"
+															"maxLength": 2048
+														},
+														"logoFileId": {
+															"type": "string",
+															"format": "uuid"
 														}
 													},
 													"required": [
@@ -10949,28 +10886,6 @@
 													},
 													"default": {}
 												},
-												"policies": {
-													"type": "object",
-													"properties": {
-														"terms": {
-															"type": "string",
-															"format": "uuid"
-														},
-														"acceptableUse": {
-															"type": "string",
-															"format": "uuid"
-														},
-														"serviceAgreement": {
-															"type": "string",
-															"format": "uuid"
-														},
-														"privacy": {
-															"type": "string",
-															"format": "uuid"
-														}
-													},
-													"default": {}
-												},
 												"socialLinks": {
 													"type": "array",
 													"items": {
@@ -10983,8 +10898,11 @@
 															},
 															"url": {
 																"type": "string",
-																"maxLength": 2048,
-																"format": "uri"
+																"maxLength": 2048
+															},
+															"logoFileId": {
+																"type": "string",
+																"format": "uuid"
 															}
 														},
 														"required": [
@@ -11527,6 +11445,110 @@
 											"default": null
 										}
 									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/site/contact-logos": {
+			"post": {
+				"tags": [
+					"site"
+				],
+				"summary": "Upload a contact logo (PNG, JPEG or WebP, up to 2 MB)",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 255
+						},
+						"required": true,
+						"name": "name",
+						"in": "query"
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"image/png": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/jpeg": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						},
+						"image/webp": {
+							"schema": {
+								"type": "string",
+								"format": "binary"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string",
+											"format": "uuid"
+										}
+									},
+									"required": [
+										"id"
+									]
 								}
 							}
 						}
@@ -13323,7 +13345,7 @@
 				"tags": [
 					"content"
 				],
-				"summary": "Create a content draft",
+				"summary": "Create a help document or announcement",
 				"requestBody": {
 					"description": "OK",
 					"required": true,
@@ -13356,12 +13378,10 @@
 										"properties": {
 											"en-US": {
 												"type": "string",
-												"minLength": 1,
 												"maxLength": 60000
 											},
 											"zh-CN": {
 												"type": "string",
-												"minLength": 1,
 												"maxLength": 60000
 											}
 										},
@@ -13373,22 +13393,17 @@
 									"visibility": {
 										"type": "string",
 										"enum": [
+											"hidden",
 											"public",
-											"signed_in",
-											"plan",
-											"level"
+											"signed_in"
 										],
-										"default": "public"
+										"default": "hidden"
 									},
-									"audienceIds": {
-										"type": "array",
-										"items": {
-											"type": "string",
-											"minLength": 1,
-											"maxLength": 100
-										},
-										"maxItems": 100,
-										"default": []
+									"sendEmail": {
+										"type": "boolean"
+									},
+									"sendTelegram": {
+										"type": "boolean"
 									},
 									"pinned": {
 										"type": "boolean",
@@ -13415,7 +13430,8 @@
 									"titles",
 									"bodies",
 									"kind"
-								]
+								],
+								"additionalProperties": false
 							}
 						}
 					}
@@ -13479,7 +13495,7 @@
 				"tags": [
 					"content"
 				],
-				"summary": "List content categories and audiences",
+				"summary": "List document categories",
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -13493,48 +13509,10 @@
 											"items": {
 												"type": "string"
 											}
-										},
-										"plans": {
-											"type": "array",
-											"items": {
-												"type": "object",
-												"properties": {
-													"id": {
-														"type": "string"
-													},
-													"name": {
-														"type": "string"
-													}
-												},
-												"required": [
-													"id",
-													"name"
-												]
-											}
-										},
-										"levels": {
-											"type": "array",
-											"items": {
-												"type": "object",
-												"properties": {
-													"id": {
-														"type": "string"
-													},
-													"name": {
-														"type": "string"
-													}
-												},
-												"required": [
-													"id",
-													"name"
-												]
-											}
 										}
 									},
 									"required": [
-										"categories",
-										"plans",
-										"levels"
+										"categories"
 									]
 								}
 							}
@@ -13798,12 +13776,10 @@
 										"properties": {
 											"en-US": {
 												"type": "string",
-												"minLength": 1,
 												"maxLength": 60000
 											},
 											"zh-CN": {
 												"type": "string",
-												"minLength": 1,
 												"maxLength": 60000
 											}
 										},
@@ -13815,20 +13791,16 @@
 									"visibility": {
 										"type": "string",
 										"enum": [
+											"hidden",
 											"public",
-											"signed_in",
-											"plan",
-											"level"
+											"signed_in"
 										]
 									},
-									"audienceIds": {
-										"type": "array",
-										"items": {
-											"type": "string",
-											"minLength": 1,
-											"maxLength": 100
-										},
-										"maxItems": 100
+									"sendEmail": {
+										"type": "boolean"
+									},
+									"sendTelegram": {
+										"type": "boolean"
 									},
 									"pinned": {
 										"type": "boolean"
@@ -13841,7 +13813,8 @@
 										"minLength": 1,
 										"maxLength": 100
 									}
-								}
+								},
+								"additionalProperties": false
 							}
 						}
 					}
@@ -13943,183 +13916,6 @@
 									"required": [
 										"ok"
 									]
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Invalid request",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Not signed in",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"403": {
-						"description": "Permission denied",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"404": {
-						"description": "Not found",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/admin/content/{id}/publish": {
-			"post": {
-				"tags": [
-					"content"
-				],
-				"summary": "Publish or schedule content",
-				"parameters": [
-					{
-						"schema": {
-							"type": "string",
-							"minLength": 1
-						},
-						"required": true,
-						"name": "id",
-						"in": "path"
-					}
-				],
-				"requestBody": {
-					"description": "OK",
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"type": "object",
-								"properties": {
-									"publishAt": {
-										"type": "string",
-										"format": "date-time"
-									},
-									"sendEmail": {
-										"type": "boolean",
-										"default": false
-									},
-									"sendTelegram": {
-										"type": "boolean",
-										"default": false
-									}
-								}
-							}
-						}
-					}
-				},
-				"responses": {
-					"200": {
-						"description": "OK",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ContentRecord"
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Invalid request",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Not signed in",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"403": {
-						"description": "Permission denied",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"404": {
-						"description": "Not found",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					},
-					"409": {
-						"description": "Content changed while saving",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Error"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/admin/content/{id}/unpublish": {
-			"post": {
-				"tags": [
-					"content"
-				],
-				"summary": "Take content offline",
-				"parameters": [
-					{
-						"schema": {
-							"type": "string",
-							"minLength": 1
-						},
-						"required": true,
-						"name": "id",
-						"in": "path"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ContentRecord"
 								}
 							}
 						}
@@ -19479,13 +19275,17 @@
 													},
 													"forum": {
 														"type": "boolean"
+													},
+													"avatarUrl": {
+														"type": "string"
 													}
 												},
 												"required": [
 													"id",
 													"title",
 													"type",
-													"forum"
+													"forum",
+													"avatarUrl"
 												]
 											}
 										}
@@ -19497,6 +19297,102 @@
 								}
 							}
 						}
+					},
+					"400": {
+						"description": "Invalid request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Not signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Permission denied",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/admin/telegram/chats/{botId}/{chatId}/avatar": {
+			"get": {
+				"tags": [
+					"telegram"
+				],
+				"summary": "Read a known Telegram chat thumbnail",
+				"parameters": [
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[1-9]\\d{0,15}$"
+						},
+						"required": true,
+						"name": "botId",
+						"in": "path"
+					},
+					{
+						"schema": {
+							"type": "string",
+							"pattern": "^[1-9]\\d{0,15}$"
+						},
+						"required": true,
+						"name": "chatId",
+						"in": "path"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Telegram chat photo",
+						"content": {
+							"image/jpeg": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/png": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							},
+							"image/webp": {
+								"schema": {
+									"type": "string",
+									"format": "binary"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No chat photo"
 					},
 					"400": {
 						"description": "Invalid request",

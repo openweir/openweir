@@ -149,8 +149,11 @@
 										},
 										"url": {
 											"type": "string",
-											"maxLength": 2048,
-											"format": "uri"
+											"maxLength": 2048
+										},
+										"logoFileId": {
+											"type": "string",
+											"format": "uuid"
 										}
 									},
 									"required": [
@@ -3848,6 +3851,10 @@
 											},
 											"message_thread_id": {
 												"type": "integer"
+											},
+											"forum_topic_closed": {
+												"type": "object",
+												"properties": {}
 											},
 											"from": {
 												"type": "object",
